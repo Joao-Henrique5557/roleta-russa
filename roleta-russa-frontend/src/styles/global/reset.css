@@ -1,0 +1,42 @@
+/* ===================================
+   RESET E ESTILOS BASE
+   =================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family);
+  background-color: var(--color-bg-light);
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  color: var(--color-text-primary);
+}
+
+body {
+  line-height: var(--line-height-normal);
+}
+
+button {
+  font-family: var(--font-family);
+}
+
+input,
+textarea,
+select {
+  font-family: var(--font-family);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  html, body, #root {
+    height: auto;
+    min-height: 100vh;
+  }
+}

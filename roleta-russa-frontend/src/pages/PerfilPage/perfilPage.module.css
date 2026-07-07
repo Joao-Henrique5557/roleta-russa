@@ -1,0 +1,85 @@
+.perfilPage {
+  color: var(--color-text-white);
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)),
+    url("/images/fundo.png");
+  background-size: cover;
+  background-position: center;
+  /* [MOBILE FIX] background-attachment: fixed quebra em iOS Safari (paralax bug) */
+  background-attachment: scroll;
+  background-repeat: no-repeat;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  align-items: center;
+}
+
+h1{
+    text-align: center;
+}
+
+.gradeInfo{
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+
+.labelItens{
+    width: 50%;
+    text-align: center;
+}
+
+.ItensInfo{
+    width: 50%;
+    text-align: center;
+}
+
+.fotoUser{
+    background-color: white;
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+    margin: 0 auto;
+}
+
+.btnBack{
+    width: 20%;
+    height: 40px;
+    background-color: transparent;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.areaDEV{
+    width: 100%;   
+    display: flex;
+    flex-direction: row;
+    background-color: rgba(66, 60, 60, 0.75);
+    border-radius: 10px;
+    margin: 20px 0;
+    padding: 20px;
+}
+
+.terminalSQL{
+    width: 100%;
+    height: 200px;
+    background-color: black;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    font-family: monospace;
+    font-size: 14px;
+}
+
+.semAcesso {
+    color: red;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 20px;
+}

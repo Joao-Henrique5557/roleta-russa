@@ -1,0 +1,15 @@
+# Build
+target/
+*.war
+*.class
+
+# Eclipse/IDE
+.classpath
+.project
+.settings/
+
+# Credenciais / configuração local do banco - nunca versionar
+.env
+
+# SO
+.DS_Store

@@ -1,0 +1,46 @@
+# Como usar:
+#   1. Instale o MySQL na sua máquina (fora do Docker) e deixe rodando na
+#      porta 3306 padrão.
+#   2. Rode o schema uma vez: mysql -u root -p < db/schema.sql
+#   3. (Opcional) copie .env.example para .env e ajuste DB_USER/DB_PASSWORD
+#      se seu MySQL não usar "root" sem senha.
+#   4. Rode: docker compose up --build
+#
+# Backend: http://localhost:8080
+# Frontend: http://localhost:5173
+#
+# O backend roda dentro do Docker, mas o MySQL roda direto na sua máquina
+# (fora do Docker) - por isso o container aponta para "host.docker.internal"
+# em vez de "localhost". No Docker Desktop (Windows/Mac) isso já funciona
+# nativamente; no Linux, o "extra_hosts" abaixo faz a mesma ponte.
+
+services:
+  backend:
+    build:
+      context: ./roleta-russa-backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: ${DB_URL:-jdbc:mysql://host.docker.internal:3306/roleta_russa?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+      DB_USER: ${DB_USER:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    container_name: roleta-russa-backend
+
+  frontend:
+    build:
+      context: ./roleta-russa-frontend
+      dockerfile: Dockerfile.dev # Dockerfile.dev = modo desenvolvimento (vite dev server com hot-reload)
+    ports:
+      - "5173:5173"
+    environment:
+      # IMPORTANTE: esta URL é usada pelo NAVEGADOR (não pelo container do frontend),
+      # já que quem executa o JS e faz as chamadas de API é o browser da sua máquina.
+      # Por isso é "localhost:8080" e NÃO "backend:8080" (nome só resolvível
+      # dentro da rede interna do Docker, que o navegador não enxerga).
+      VITE_API_URL: http://localhost:8080
+    depends_on:
+      - backend
+    container_name: roleta-russa-frontend

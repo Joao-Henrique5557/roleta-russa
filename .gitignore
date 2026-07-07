@@ -1,0 +1,16 @@
+# Variáveis de ambiente locais (nunca commitar - contém segredos)
+.env
+.env.local
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Editores
+.vscode/*
+!.vscode/extensions.json
+.idea
+
+# Cada subprojeto tem seu próprio .gitignore mais específico:
+# - roleta-russa-backend/.gitignore  (target/, *.war, credenciais)
+# - roleta-russa-frontend/.gitignore (node_modules/, dist/)

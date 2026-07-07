@@ -1,0 +1,62 @@
+.toast {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  min-width: 260px;
+  max-width: 360px;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  color: var(--color-text-white);
+  font-size: var(--font-size-sm);
+  animation: slideIn 0.25s ease-out;
+}
+
+.error {
+  background: linear-gradient(135deg, #c0392b, #e74c3c);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.success {
+  background: linear-gradient(135deg, #1e8449, #27ae60);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.info {
+  background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary));
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.closeBtn {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 var(--spacing-xs);
+  opacity: 0.8;
+}
+
+.closeBtn:hover {
+  opacity: 1;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .toast {
+    min-width: 0;
+    max-width: 90vw;
+  }
+}

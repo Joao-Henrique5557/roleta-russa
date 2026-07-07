@@ -1,0 +1,45 @@
+/* ===================================
+   LOGIN / CADASTRO PAGE
+   =================================== */
+
+.loginContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 100vh;
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)),
+    url("/images/fundo.png");
+  background-size: cover;
+  background-position: center;
+  /* [MOBILE FIX] fixed quebra em iOS Safari */
+  background-attachment: scroll;
+  background: linear-gradient(
+    135deg,
+    rgba(10, 10, 30, 0.98),
+    rgba(20, 20, 60, 0.98)
+  );
+  flex-direction: column;
+  color: rgba(165, 176, 199, 0.904);
+  justify-content: center;
+}
+
+/* [MOBILE FIX] Padding lateral evita que o form encoste nas bordas */
+@media (max-width: 768px) {
+  .loginContainer {
+    padding: var(--spacing-lg);
+    align-items: flex-start;
+    padding-top: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .loginContainer {
+    padding: var(--spacing-md);
+    padding-top: 60px;
+    /* [MOBILE FIX] Alinha no centro vertical em celulares pequenos */
+    align-items: center;
+    min-height: 100svh; /* svh = "small viewport height", correto em mobile */
+  }
+}

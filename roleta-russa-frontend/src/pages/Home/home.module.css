@@ -1,0 +1,106 @@
+/* ===================================
+   HOME PAGE
+   =================================== */
+
+.home {
+  color: var(--color-text-white);
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)),
+    url("/images/fundo.png");
+  background-size: cover;
+  background-position: center;
+  /* [MOBILE FIX] background-attachment: fixed quebra em iOS Safari (paralax bug) */
+  background-attachment: scroll;
+  background-repeat: no-repeat;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+/* Botão de logout fixo no canto */
+.logoutBtn {
+  position: fixed;
+  top: 32px;
+  left: 32px;
+  z-index: var(--z-sticky);
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+  color: var(--color-text-white);
+  font-size: 28px;
+}
+.logoutBtn:hover { transform: scale(1.1); }
+
+/* Container principal da home */
+.conteudoPrincipal {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--spacing-lg);
+  gap: var(--spacing-lg);
+  width: 100%;
+  animation: fadeIn 0.5s ease-out;
+  box-sizing: border-box;
+  position: relative;
+  /* [MOBILE FIX] min-height ao invés de height fixo → não corta conteúdo */
+  min-height: 100vh;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* =============================================
+   RESPONSIVE
+   ============================================= */
+
+/* Tablets */
+@media (max-width: 1024px) {
+  .conteudoPrincipal {
+    gap: var(--spacing-md);
+    padding: var(--spacing-xl) var(--spacing-lg);
+    /* [MOBILE FIX] Em tablets, empilha verticalmente */
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 80px; /* espaço para o logoutBtn */
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .home {
+    /* [MOBILE FIX] scroll correto no celular */
+    overflow-y: auto;
+    height: auto;
+  }
+
+  .conteudoPrincipal {
+    min-height: 100vh;
+    flex-direction: column;
+    align-items: stretch;
+    padding: var(--spacing-md);
+    padding-top: 72px;
+    gap: var(--spacing-md);
+    justify-content: flex-start;
+  }
+
+  .logoutBtn {
+    top: 16px;
+    left: 16px;
+    font-size: 24px;
+  }
+}
+
+/* Celulares pequenos */
+@media (max-width: 480px) {
+  .conteudoPrincipal {
+    padding: var(--spacing-sm);
+    padding-top: 64px;
+    gap: var(--spacing-sm);
+  }
+}

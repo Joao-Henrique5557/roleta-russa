@@ -1,0 +1,30 @@
+.botaoMenu {
+  padding: var(--spacing-md);
+  border-radius: var(--radius-xl);
+  border: 2px solid var(--color-secondary);
+  background: var(--color-bg-dark-secondary);
+  color: var(--color-text-white);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  backdrop-filter: blur(4px);
+  width: 100%;
+}
+.botaoMenu:hover {
+  transform: scale(1.03);
+  border-color: var(--color-secondary-light);
+  background: rgba(127, 127, 255, 0.15);
+  box-shadow: 0 0 10px rgba(127, 127, 255, 0.3);
+}
+.botaoMenu:active {
+  transform: scale(0.98);
+}
+.botaoMenu:focus {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}

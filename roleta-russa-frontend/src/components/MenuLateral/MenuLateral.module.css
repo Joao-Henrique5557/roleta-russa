@@ -1,0 +1,22 @@
+.menuLateral {
+  flex: 0 1 250px;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+@media (max-width: 1200px) {
+  .menuLateral {
+    flex: 0 1 200px;
+  }
+}
+@media (max-width: 768px) {
+  .menuLateral {
+    width: 100%;
+    flex: none;
+    flex-direction: row;
+    gap: var(--spacing-md);
+    overflow-x: auto;
+    padding-bottom: var(--spacing-md);
+  }
+}

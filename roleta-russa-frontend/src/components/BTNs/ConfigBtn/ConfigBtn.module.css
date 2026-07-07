@@ -1,0 +1,21 @@
+.configBtn {
+  position: fixed;
+  top: 32px;
+  right: 32px;
+  z-index: var(--z-sticky);
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+.configBtn:hover {
+  transform: scale(1.1);
+}
+.configBtn span {
+  font-size: 28px;
+  color: var(--color-text-white);
+}
+@media (max-width: 768px) {
+  .configBtn {
+    top: 16px;
+    right: 16px;
+  }
+}
