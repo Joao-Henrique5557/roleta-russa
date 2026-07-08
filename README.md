@@ -7,12 +7,12 @@ desenvolvimento).
 Projeto de estudo, focado inteiramente em **desenvolvimento local** — sem
 depender de serviços de terceiros (nuvem, Firebase, deploy hospedado, etc.).
 
-| Camada    | Tecnologia                                           |
-| --------- | ---------------------------------------------------- |
-| Frontend  | React 19 + Vite                                      |
-| Backend   | Java 17 + Jakarta Servlet 5 rodando em Tomcat 10     |
-| Banco     | MySQL local, acessado via JDBC (`ConnectionFactory`) |
-| Dev local | Docker Compose (backend + frontend em containers)    |
+| Camada    | Tecnologia                                                 |
+| --------- | ---------------------------------------------------------- |
+| Frontend  | React 19 + Vite                                            |
+| Backend   | Java 17 + Jakarta Servlet 5 rodando em Tomcat 10           |
+| Banco     | MySQL, containerizado via Docker Compose                   |
+| Dev local | Docker Compose (banco + backend + frontend, um comando só) |
 
 ## Estrutura
 
@@ -20,56 +20,48 @@ depender de serviços de terceiros (nuvem, Firebase, deploy hospedado, etc.).
 roleta-russa-full/
 ├── roleta-russa-backend/     → API Java/Tomcat
 ├── roleta-russa-frontend/    → SPA React/Vite
-├── db/schema.sql              → Script de criação do banco MySQL
-├── docker-compose.yml        → Orquestra os dois serviços para desenvolvimento
-├── .env.example               → Modelo das variáveis de conexão com o MySQL
-├── SETUP.md                   → Guia completo (MySQL, Docker, troubleshooting)
+├── db/schema.sql              → Script de criação do banco MySQL (aplicado automaticamente)
+├── docker-compose.yml        → Orquestra banco + backend + frontend
+├── .env.example               → Modelo da senha do MySQL
+├── SETUP.md                   → Guia completo (Docker, alternativa via Eclipse, troubleshooting)
 └── README.md                  → Este arquivo
 ```
 
 ## Início rápido
 
-### 1. Pré-requisitos
+### 1. Pré-requisito único: Docker
 
-- [MySQL](https://dev.mysql.com/downloads/) instalado e rodando na sua
-  máquina (porta 3306 padrão).
-- [Docker Engine](https://docs.docker.com/engine/install/) e o plugin
-  **Docker Compose v2** (comando `docker compose`, sem hífen) — só se for
-  usar Docker. Confirme com:
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Windows/Mac)
+  ou Docker Engine + **Compose v2** (Linux). Confirme com:
   ```bash
   docker compose version
   ```
   Se der erro `unknown command: docker compose`, veja
   **[SETUP.md → Instalando o Docker Compose v2](./SETUP.md#instalando-o-docker-compose-v2)**.
-  (Também é possível rodar tudo sem Docker — veja
-  **[SETUP.md → Opção B](./SETUP.md#opção-b-sem-docker-java--nodejs-locais)**.)
 
-### 2. Crie o banco (uma vez só)
+Não precisa instalar MySQL, Java ou Node na sua máquina — tudo roda
+containerizado. (Se preferir debugar o backend direto no Eclipse, isso
+também é possível — veja
+**[SETUP.md → Alternativa](./SETUP.md#alternativa-rodando-o-backend-fora-do-docker-eclipse)**.)
 
-```bash
-mysql -u root -p < db/schema.sql
-```
-
-Isso cria o database `roleta_russa` com as tabelas `usuarios` e
-`novidades`. Veja **[SETUP.md → Seção 1](./SETUP.md#1-configurar-o-mysql-local)**
-se precisar instalar o MySQL do zero.
-
-Se seu MySQL não usar `root` sem senha, copie `.env.example` para `.env` na
-raiz do projeto e ajuste `DB_USER`/`DB_PASSWORD`.
-
-### 3. Suba o projeto
+### 2. Suba o projeto
 
 ```bash
 docker compose up --build
 ```
 
+Na primeira vez, o container do MySQL já cria o banco `roleta_russa` e as
+tabelas sozinho (usando `db/schema.sql`) — nenhum passo manual de banco de
+dados é necessário.
+
 - Frontend: http://localhost:5173
 - Backend: http://localhost:8080
+- Checagem do banco: http://localhost:8080/Status → `"bancoConectado": true`
 
 Deu algum erro? Vá direto para
-**[SETUP.md → Troubleshooting](./SETUP.md#6-troubleshooting)** — a seção cobre
-os problemas mais comuns (permissão do Docker, versão do Compose, Node no
-container, conexão com o MySQL, CORS).
+**[SETUP.md → Troubleshooting](./SETUP.md#troubleshooting)** — cobre os
+problemas mais comuns (porta 3306 ocupada, permissão do Docker, versão do
+Compose, Node no container, CORS).
 
 ---
 

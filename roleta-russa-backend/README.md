@@ -27,31 +27,34 @@ externos para configurar.
 - `GET /Status` agora testa a conexão com o MySQL (`bancoConectado`) em vez
   do Firestore.
 
-## Configuração (variáveis de ambiente, todas opcionais)
+## Configuração (banco de dados)
 
-| Variável      | Padrão                                                                                   |
-|---------------|-------------------------------------------------------------------------------------------|
-| `DB_URL`      | `jdbc:mysql://localhost:3306/roleta_russa?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true` |
-| `DB_USER`     | `root`                                                                                     |
-| `DB_PASSWORD` | *(vazio)*                                                                                  |
+O jeito recomendado é rodar tudo via `docker compose up --build` na raiz do
+projeto — o MySQL sobe containerizado e o backend já vem configurado para
+achá-lo automaticamente (veja `docker-compose.yml`: `DB_URL=jdbc:mysql://db:3306/...`).
 
-Se seu MySQL local usa usuário/senha diferentes do padrão, defina essas
-variáveis (no seu IDE, no `.env` da raiz para Docker Compose, ou direto no
-shell antes de rodar `mvn`).
+Se você for rodar o backend fora do Docker (Eclipse, por exemplo), primeiro
+suba só o banco (`docker compose up -d db` na raiz), e o backend vai achar
+ele em `localhost:3306` usando o `.env` já presente em
+`src/main/resources/.env`:
 
-## Rodando localmente (sem Docker)
-
-```bash
-# 1. Tenha o MySQL instalado e rodando (porta 3306 padrão)
-# 2. Crie o schema (uma vez só)
-mysql -u root -p < ../db/schema.sql
-
-# 3. Build do .war
-mvn clean package
-
-# 4. Rode com qualquer servidor Jakarta EE 9 (ex: Tomcat 10.0.x local),
-#    ou use o Docker (veja SETUP.md na raiz do projeto).
 ```
+DB_URL=jdbc:mysql://localhost:3306/roleta_russa?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+DB_USER=root
+DB_PASSWORD=NovaSenhaForte123!
+```
+
+A senha precisa bater com a definida em `DB_PASSWORD` no `.env` da raiz do
+projeto (usado pelo `docker-compose.yml` pra configurar o container do
+MySQL). Depois de editar esse `.env`, é preciso um **Maven → Update
+Project** (ou `mvn clean package`) no Eclipse para o arquivo entrar no
+build — só salvar não é suficiente se o WAR já tinha sido gerado antes.
+
+A ordem de resolução em `ConnectionFactory` é: variável de ambiente real do
+sistema (usada pelo Docker Compose) → arquivo `.env` do classpath (usado
+pelo Eclipse) → valor padrão hardcoded como último recurso.
+
+Veja **[SETUP.md](../SETUP.md)** na raiz do projeto para o guia completo.
 
 ## Endpoints
 

@@ -24,8 +24,3 @@ CREATE TABLE IF NOT EXISTS novidades (
     data_publicacao  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     ativo            BOOLEAN      NOT NULL DEFAULT TRUE
 );
-
--- Opcional: uma novidade de exemplo para o front-end não começar vazio.
-INSERT INTO novidades (titulo, descricao, tipo, autor, versao, ativo)
-SELECT 'Migração para MySQL local', 'O backend agora usa MySQL local (ConnectionFactory/JDBC) no lugar do Firestore.', 'MELHORIA', 'João Henrique', '2.0.0', TRUE
-WHERE NOT EXISTS (SELECT 1 FROM novidades);

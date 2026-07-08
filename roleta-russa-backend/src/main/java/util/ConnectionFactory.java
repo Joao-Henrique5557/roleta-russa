@@ -73,8 +73,21 @@ public final class ConnectionFactory {
         }
     }
 
+    /**
+     * Resolve uma variável de configuração em ordem de prioridade:
+     * 1) variável de ambiente real do sistema operacional ({@code System.getenv});
+     * 2) valor lido do arquivo {@code .env} (via {@link EnvLoader});
+     * 3) valor padrão informado.
+     */
     private static String env(String chave, String padrao) {
         String valor = System.getenv(chave);
-        return (valor != null && !valor.isBlank()) ? valor : padrao;
+        if (valor != null && !valor.isBlank()) {
+            return valor;
+        }
+        valor = EnvLoader.get(chave);
+        if (valor != null && !valor.isBlank()) {
+            return valor;
+        }
+        return padrao;
     }
 }

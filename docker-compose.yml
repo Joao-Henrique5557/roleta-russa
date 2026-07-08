@@ -1,38 +1,66 @@
-# Como usar:
-#   1. Instale o MySQL na sua máquina (fora do Docker) e deixe rodando na
-#      porta 3306 padrão.
-#   2. Rode o schema uma vez: mysql -u root -p < db/schema.sql
-#   3. (Opcional) copie .env.example para .env e ajuste DB_USER/DB_PASSWORD
-#      se seu MySQL não usar "root" sem senha.
-#   4. Rode: docker compose up --build
+# MVP funcional - um único comando sobe tudo (MySQL + backend + frontend):
 #
-# Backend: http://localhost:8080
+#   docker compose up --build
+#
+# Backend:  http://localhost:8080
 # Frontend: http://localhost:5173
 #
-# O backend roda dentro do Docker, mas o MySQL roda direto na sua máquina
-# (fora do Docker) - por isso o container aponta para "host.docker.internal"
-# em vez de "localhost". No Docker Desktop (Windows/Mac) isso já funciona
-# nativamente; no Linux, o "extra_hosts" abaixo faz a mesma ponte.
+# O MySQL roda DENTRO do Docker (serviço "db" abaixo), não precisa instalar
+# nada na sua máquina. O schema (db/schema.sql) é aplicado automaticamente
+# na primeira vez que o container do banco sobe.
+#
+# ATENÇÃO: se você já tem um MySQL instalado direto no seu sistema e rodando
+# na porta 3306, vai dar conflito de porta ("port is already allocated").
+# Pare o serviço local antes de subir este projeto:
+#   sudo systemctl stop mysql       (Linux/systemd)
+#   sudo systemctl disable mysql    (opcional, pra não voltar a subir sozinho no boot)
 
 services:
+  db:
+    image: mysql:8.0
+    container_name: roleta-russa-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-NovaSenhaForte123!}
+      MYSQL_ROOT_HOST: "%" # permite conexão do root vindo de qualquer host (outros
+                            # containers, e da sua máquina via localhost:3306)
+      MYSQL_DATABASE: roleta_russa
+    ports:
+      - "3306:3306" # publicado no host também, assim rodar o backend pelo
+                     # Eclipse (fora do Docker) funciona sem configuração extra
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${DB_PASSWORD:-NovaSenhaForte123!}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
   backend:
     build:
       context: ./roleta-russa-backend
       dockerfile: Dockerfile
+    container_name: roleta-russa-backend
     ports:
       - "8080:8080"
     environment:
-      DB_URL: ${DB_URL:-jdbc:mysql://host.docker.internal:3306/roleta_russa?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
-      DB_USER: ${DB_USER:-root}
-      DB_PASSWORD: ${DB_PASSWORD:-}
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    container_name: roleta-russa-backend
+      # "db" = nome do serviço acima, resolvível pela rede interna do Docker
+      # Compose (backend e db estão no mesmo compose, então já enxergam um
+      # ao outro por nome de serviço).
+      DB_URL: jdbc:mysql://db:3306/roleta_russa?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      DB_USER: root
+      DB_PASSWORD: ${DB_PASSWORD:-NovaSenhaForte123!}
+    depends_on:
+      db:
+        condition: service_healthy
 
   frontend:
     build:
       context: ./roleta-russa-frontend
       dockerfile: Dockerfile.dev # Dockerfile.dev = modo desenvolvimento (vite dev server com hot-reload)
+    container_name: roleta-russa-frontend
     ports:
       - "5173:5173"
     environment:
@@ -43,4 +71,6 @@ services:
       VITE_API_URL: http://localhost:8080
     depends_on:
       - backend
-    container_name: roleta-russa-frontend
+
+volumes:
+  db_data:
