@@ -37,7 +37,11 @@ export function ToastProvider({ children }) {
       {children}
       <div className={styles.toastContainer}>
         {toasts.map((toast) => (
-          <Toast key={toast.id} tipo={toast.tipo} onClose={() => removerToast(toast.id)}>
+          <Toast
+            key={toast.id}
+            tipo={toast.tipo}
+            onClose={() => removerToast(toast.id)}
+          >
             {toast.mensagem}
           </Toast>
         ))}

@@ -6,7 +6,7 @@ import AutenticationCadastro from "./pages/authentication/Cadastro";
 import SingleplayerGame from "./pages/game/SingleplayerGame";
 import MultiplayerLobby from "./pages/game/MultiplayerLobby";
 import ConfigPage from "./pages/ConfigPage/ConfigPage";
-import Musica from "./components/especiais/Musica/Musica";
+import Musica from "./components/especiais/audio/Musica/Musica";
 import musicTracks from "./constants/musicTracks";
 import PerfilPage from "./pages/PerfilPage/PerfilPage";
 import ErrorBoundary from "./components/Feedback/ErrorBoundary/ErrorBoundary";
@@ -17,7 +17,7 @@ function AppContent() {
   const [view, setView] = useState("login");
   const [returnView, setReturnView] = useState("login");
   const [trackId, setTrackId] = useState(4);
-  const [volume, setVolume] = useState(0.5);
+  const [volume, setVolume] = useState(0.05);
   const [urlAPI] = useState(
     import.meta.env.VITE_API_URL || "http://localhost:8080",
   );
@@ -43,7 +43,7 @@ function AppContent() {
 
   const onPerfil = () => {
     if (!localStorage.getItem("usuario")) {
-      navigateTo("login");
+      alert("Você precisa estar logado para acessar o perfil.");
     } else {
       navigateTo("perfil");
     }
