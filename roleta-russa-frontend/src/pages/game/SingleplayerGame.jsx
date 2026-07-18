@@ -1,6 +1,10 @@
 import { useState, useCallback, useEffect } from "react";
+import PropTypes from "prop-types";
 import styles from "./game.module.css";
 import { useSoundEffect } from "../../hooks/useSoundEffect";
+import axios from "axios";
+import { useToast } from "../../context/ToastContext";
+import { getErrorMessage } from "../../utils/apiError";
 
 // ---- Lógica do revólver ----
 
@@ -110,7 +114,6 @@ function atirar(estado, alvo, playTiro, playRecarga, playBalaFalsa) {
       playBalaFalsa();
       logEntry = `💨 ${quemAtira} atirou em si mesmo — bala falsa. Mantém a vez.`;
       mudaVez = false; // não muda a vez
-    
     }
   } else {
     // alvo é o outro jogador
@@ -156,19 +159,56 @@ function atirar(estado, alvo, playTiro, playRecarga, playBalaFalsa) {
 
   if (novoPos >= balas.length) {
     // nova posição é maior que a capacidade do revolver? então o revolver precisa ser recarregado
+    // [BUG FIX] recarregar() já toca playRecarga() internamente — antes o
+    // caller (agir()) tocava esse mesmo som de novo comparando "rodada",
+    // fazendo o efeito sonoro de recarga tocar duas vezes seguidas no
+    // turno do jogador (o turno do bot não tinha essa checagem extra,
+    // então o comportamento estava inconsistente entre os dois).
     novoEstado = recarregar(novoEstado, playRecarga);
   }
 
   return novoEstado;
 }
 
+async function ganharPontos(urlAPI, showToast) {
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
+
+  if (!usuario) return;
+
+  const dados = new URLSearchParams();
+  dados.append("id", usuario.id);
+  dados.append("forma", "bot");
+
+  try {
+    await axios.post(`${urlAPI}/GanharPontos`, dados, {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      timeout: 5000,
+    });
+  } catch (error) {
+    // [MELHORIA] Antes o erro só ia pro console.error e o jogador nunca
+    // ficava sabendo que os pontos não foram salvos. Agora usa o mesmo
+    // padrão de toast + getErrorMessage já usado em Formulario/Ranking/Novidades.
+    const mensagem = getErrorMessage(
+      error,
+      "Não foi possível salvar seus pontos.",
+    );
+    showToast(mensagem, "error");
+  }
+}
+
 // ---- Componente ----
-export default function SingleplayerGame({ onBack, onConfig }) {
+export default function SingleplayerGame({ onBack, onConfig, urlAPI }) {
   const [estado, setEstado] = useState(null); // estado global do jogo, inicialmente null (tela de setup)
+  const [pontosEnviados, setPontosEnviados] = useState(false);
+
+  const { showToast } = useToast();
 
   const playTiro = useSoundEffect("/audio/efeitos_sonoros/tiro.mp3");
   const playRecarga = useSoundEffect(
-    "/audio/efeitos_sonoros/arma_recarregando.mp3");
+    "/audio/efeitos_sonoros/arma_recarregando.mp3",
+  );
   const playBalaFalsa = useSoundEffect("/audio/efeitos_sonoros/tiro_falso.mp3");
 
   // função para colocar a dificuldade escolhida e iniciar o jogo, chamando estadoInicial() e setEstado()
@@ -188,11 +228,11 @@ export default function SingleplayerGame({ onBack, onConfig }) {
 
         let novo = atirar(prev, alvo, playTiro, playRecarga, playBalaFalsa); // realizar o tiro, retorna o estado da partida a cada tiro
 
-        // atirar() chama recarregar() internamente quando o tambor esvazia,
-        // o que aumenta "rodada" — usamos isso pra saber se o tambor
-        // recarregou nesse disparo e tocar o som correspondente.
+        // [BUG FIX] Removida a checagem `if (novo.rodada !== prev.rodada) playRecarga();`
+        // que existia aqui. atirar() já chama recarregar() internamente
+        // quando o tambor esvazia, e recarregar() já toca o som de recarga
+        // sozinho — essa segunda chamada duplicava o efeito sonoro.
 
-        if (novo.rodada !== prev.rodada) playRecarga(); // se
         if (novo.fase === "jogando" && novo.vezDe === "bot") {
           novo = { ...novo, esperandoBot: true };
         }
@@ -240,7 +280,13 @@ export default function SingleplayerGame({ onBack, onConfig }) {
         const botAlvo = probVerdadeira < 0.4 ? "self" : "opponent";
 
         // depois = atirar no alvo
-        const depois = atirar(prev, botAlvo, playTiro, playRecarga, playBalaFalsa);
+        const depois = atirar(
+          prev,
+          botAlvo,
+          playTiro,
+          playRecarga,
+          playBalaFalsa,
+        );
 
         // Se o bot ainda tiver a vez, mantém esperandoBot = true
         const botContinua = depois.fase === "jogando" && depois.vezDe === "bot";
@@ -252,6 +298,18 @@ export default function SingleplayerGame({ onBack, onConfig }) {
 
     return () => clearTimeout(timer);
   }, [estado, playTiro, playRecarga, playBalaFalsa]);
+
+  useEffect(() => {
+    if (
+      estado &&
+      estado.fase === "resultado" &&
+      !estado.bot.alive &&
+      !pontosEnviados
+    ) {
+      ganharPontos(urlAPI, showToast);
+      setPontosEnviados(true);
+    }
+  }, [estado, pontosEnviados, urlAPI, showToast]);
 
   // ---- 1. TELA DE SETUP ----
   if (!estado) {
@@ -374,6 +432,7 @@ export default function SingleplayerGame({ onBack, onConfig }) {
             >
               {venceu ? "🏆 Você Venceu!" : "💀 Você Perdeu!"}
             </p>
+            <small>{venceu ? "+10 pts" : "+0 pts"}</small>
             <div className={styles.resultStats}>
               <div className={styles.resultStat}>
                 <span>Sua vida</span>
@@ -391,7 +450,10 @@ export default function SingleplayerGame({ onBack, onConfig }) {
             <div className={styles.resultButtons}>
               <button
                 className={styles.primaryButton}
-                onClick={() => setEstado(null)}
+                onClick={() => {
+                  setPontosEnviados(false);
+                  setEstado(null);
+                }}
               >
                 Jogar de novo
               </button>
@@ -525,3 +587,9 @@ export default function SingleplayerGame({ onBack, onConfig }) {
     </div>
   );
 }
+
+SingleplayerGame.propTypes = {
+  onBack: PropTypes.func.isRequired,
+  onConfig: PropTypes.func.isRequired,
+  urlAPI: PropTypes.string.isRequired,
+};

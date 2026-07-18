@@ -14,3 +14,5 @@ Thumbs.db
 # Cada subprojeto tem seu próprio .gitignore mais específico:
 # - roleta-russa-backend/.gitignore  (target/, *.war, credenciais)
 # - roleta-russa-frontend/.gitignore (node_modules/, dist/)
+
+.github

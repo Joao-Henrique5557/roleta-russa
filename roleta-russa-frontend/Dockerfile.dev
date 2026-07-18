@@ -1,14 +1,31 @@
+# Usa a imagem oficial do Node 22 na variante "alpine" (Linux minimalista, imagem bem menor)
+# pwd = / (diretório de trabalho começa na raiz da imagem)
 FROM node:22-alpine
 
+# Muda o diretório de trabalho para /app (todos os comandos seguintes rodam a partir daqui)
 WORKDIR /app
 
+# Copia SÓ os arquivos de manifesto de dependências (package.json e package-lock.json)
+# Fazer isso antes do "COPY . ." é proposital: aproveita o cache de camadas do Docker.
+# Se o código mudar mas as dependências não, o "npm install" não precisa rodar de novo.
 COPY package*.json ./
+
+# Instala as dependências listadas no package.json (cria a pasta node_modules)
 RUN npm install
 
+# Agora sim copia todo o resto do código-fonte do projeto para dentro do container
 COPY . .
 
+# Define uma variável de ambiente disponível dentro do container.
+# O Vite vai ler isso via import.meta.env.VITE_API_URL no código do frontend.
 ENV VITE_API_URL=http://localhost:8080
 
+# Porta que o serviço vai ficar (documentação/informativo — não abre a porta sozinho,
+# quem realmente publica a porta é o "-p" no docker run ou o "ports:" no compose)
 EXPOSE 5173
 
+# Comando que executa depois de ligar o container
+# Equivale a rodar: npm run dev -- --host
+# O "--host" faz o Vite escutar em 0.0.0.0 em vez de só localhost,
+# senão o container não aceitaria conexões vindas de fora dele (do seu navegador, por exemplo)
 CMD ["npm", "run", "dev", "--", "--host"]

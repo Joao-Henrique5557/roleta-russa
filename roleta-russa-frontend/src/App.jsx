@@ -82,6 +82,7 @@ function AppContent() {
             <SingleplayerGame
               onBack={() => navigateTo("home")}
               onConfig={() => openConfig("singleplayer")}
+              urlAPI={urlAPI}
             />
           )}
           {view === "multiplayer" && (

@@ -26,8 +26,7 @@ services:
                             # containers, e da sua máquina via localhost:3306)
       MYSQL_DATABASE: roleta_russa
     ports:
-      - "3306:3306" # publicado no host também, assim rodar o backend pelo
-                     # Eclipse (fora do Docker) funciona sem configuração extra
+      - "3307:3306"
     volumes:
       - db_data:/var/lib/mysql
       - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
