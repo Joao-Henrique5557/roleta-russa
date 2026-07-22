@@ -39,7 +39,7 @@
 
 .configCard {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: var(--spacing-2xl);
   padding: var(--spacing-lg);
   background: rgba(0, 0, 0, 0.4);
@@ -48,6 +48,7 @@
   margin: var(--spacing-lg);
   flex: 1;
   overflow-y: auto;
+  justify-content: center;
 }
 
 .configSection {
