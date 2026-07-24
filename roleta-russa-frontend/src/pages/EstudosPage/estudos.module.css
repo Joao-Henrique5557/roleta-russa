@@ -1,0 +1,149 @@
+/* ===================================
+   TELA DE ESTUDOS
+   =================================== */
+
+.pagePanel {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--color-bg-light);
+  color: var(--color-text-white);
+  overflow-y: auto;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: var(--spacing-lg);
+  gap: var(--spacing-lg);
+  flex-wrap: wrap;
+  background: rgba(0, 0, 0, 0.3);
+}
+.pageHeader h1 { margin: 0 0 var(--spacing-sm) 0; font-size: var(--font-size-2xl); }
+.pageHeader p { margin: 0; color: rgba(255, 255, 255, 0.8); }
+
+.primaryButton {
+  background-color: var(--color-primary);
+  color: var(--color-text-white);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  cursor: pointer;
+}
+
+.conteudo {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--spacing-xl) var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xl);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.secao h2 {
+  margin: 0 0 var(--spacing-md) 0;
+  font-size: var(--font-size-xl);
+  border-bottom: 1px solid rgba(127, 127, 255, 0.25);
+  padding-bottom: var(--spacing-sm);
+}
+
+.paragrafo {
+  line-height: var(--line-height-relaxed);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* ---- Tecnologias ---- */
+.gradeTecnologias {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--spacing-md);
+}
+.cardTecnologia {
+  background: rgba(127, 127, 255, 0.08);
+  border: 1px solid rgba(127, 127, 255, 0.2);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.categoriaTag {
+  align-self: flex-start;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-secondary-light);
+  background: rgba(127, 127, 255, 0.15);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+.cardTecnologia p { margin: 0; font-size: var(--font-size-sm); color: rgba(255,255,255,0.75); }
+
+/* ---- Links ---- */
+.listaLinks { list-style: disc; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+.listaLinks a { color: var(--color-primary-light); }
+
+/* ---- Materiais ---- */
+.gradeMateriais {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--spacing-md);
+}
+.cardMaterial {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(127, 127, 255, 0.2);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  color: inherit;
+  text-decoration: none;
+}
+.thumbMaterial { width: 100%; border-radius: var(--radius-sm); object-fit: cover; max-height: 140px; }
+.iconeArquivo { font-size: 32px; }
+.cardMaterial p { margin: 0; font-size: var(--font-size-sm); color: rgba(255,255,255,0.7); }
+
+/* ---- Playlists ---- */
+.listaPlaylists {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+.blocoPlaylist h3 { margin: 0 0 4px 0; }
+.embedWrapper {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%; /* 16:9 */
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-top: var(--spacing-sm);
+}
+.embedWrapper iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* ---- Conceitos ---- */
+.blocoConceito { margin-bottom: var(--spacing-lg); }
+.blocoConceito h3 { margin: 0 0 var(--spacing-sm) 0; }
+.listaConceitos { display: flex; flex-direction: column; gap: var(--spacing-sm); }
+.conceitoItem {
+  background: rgba(127, 127, 255, 0.06);
+  border: 1px solid rgba(127, 127, 255, 0.15);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+}
+.conceitoItem summary { cursor: pointer; font-weight: var(--font-weight-semibold); }
+.conceitoItem p { margin: var(--spacing-sm) 0 0 0; color: rgba(255,255,255,0.85); line-height: var(--line-height-relaxed); }
+
+@media (max-width: 600px) {
+  .conteudo { padding: var(--spacing-lg) var(--spacing-md); }
+}

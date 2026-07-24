@@ -43,6 +43,21 @@ input[type="range"] {
   border-radius: 4px;
 }
 
+a {
+  color: #66b3ff;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: #99ccff;
+  text-decoration: underline;
+}
+
+a:visited {
+  color: #b388ff;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   html, body, #root {

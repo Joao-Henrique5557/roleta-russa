@@ -47,4 +47,14 @@ public final class JsonResponse {
 		response.setCharacterEncoding("UTF-8");
 		response.getWriter().write(GSON.toJson(data));
 	}
+
+	/**
+	 * Converte um objeto Java qualquer (List, Map, etc.) numa árvore Gson
+	 * ({@link com.google.gson.JsonElement}), útil para montar respostas JSON
+	 * "na mão" quando o formato não é conhecido em tempo de compilação -
+	 * caso do resultado de um SELECT arbitrário no {@link controller.DevSqlServlet}.
+	 */
+	public static com.google.gson.JsonElement toJsonElement(Object data) {
+		return GSON.toJsonTree(data);
+	}
 }

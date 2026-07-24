@@ -59,15 +59,15 @@ Veja **[SETUP.md](../SETUP.md)** na raiz do projeto para o guia completo.
 ## Endpoints
 
 | Método | Caminho              | Descrição                                   |
-|--------|-----------------------|----------------------------------------------|
-| GET    | `/Status`              | Health check (backend + MySQL)                |
-| POST   | `/CadastrarServlet`    | Cadastra usuário (`nome`, `email`, `senha`)   |
-| POST   | `/AutenticarServlet`   | Login (`usuario`/`email`, `senha`)            |
-| GET    | `/ListarUsuarios`      | Ranking (top 10 por pontos)                   |
-| GET    | `/BuscarUsuario?id=`   | Dados atuais de um usuário                    |
-| POST   | `/GanharPontos`        | Soma pontos (`id`, `forma`=bot\|player)       |
-| GET    | `/ListarNovidades`     | Lista novidades ativas                        |
-| POST   | `/CadastrarNovidade`   | Cria novidade                                 |
+| ------ | -------------------- | ------------------------------------------- |
+| GET    | `/Status`            | Health check (backend + MySQL)              |
+| POST   | `/CadastrarServlet`  | Cadastra usuário (`nome`, `email`, `senha`) |
+| POST   | `/AutenticarServlet` | Login (`usuario`/`email`, `senha`)          |
+| GET    | `/ListarUsuarios`    | Ranking (top 10 por pontos)                 |
+| GET    | `/BuscarUsuario?id=` | Dados atuais de um usuário                  |
+| POST   | `/GanharPontos`      | Soma pontos (`id`, `forma`=bot\|player)     |
+| GET    | `/ListarNovidades`   | Lista novidades ativas                      |
+| POST   | `/CadastrarNovidade` | Cria novidade                               |
 
 Todos os parâmetros são enviados como `application/x-www-form-urlencoded`
 (compatível com o front-end em `roleta-russa-frontend`).

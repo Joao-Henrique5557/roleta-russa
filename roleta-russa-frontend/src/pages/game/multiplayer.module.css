@@ -1,0 +1,117 @@
+/* ===================================
+   SALA DE MULTIPLAYER - layout de duas colunas
+   =================================== */
+
+.layout {
+  display: flex;
+  gap: var(--spacing-lg);
+  padding: 0 var(--spacing-lg) var(--spacing-lg);
+  flex: 1;
+  align-items: flex-start;
+}
+
+.gameColumn {
+  flex: 2;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.sideColumn {
+  flex: 1;
+  min-width: 260px;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.aviso {
+  text-align: center;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: rgba(255, 200, 50, 0.1);
+  border: 1px solid rgba(255, 200, 50, 0.3);
+  border-radius: var(--radius-md);
+  margin: 0;
+}
+
+.participantes,
+.chat {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(127, 127, 255, 0.2);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+}
+
+.participantes h3,
+.chat h3 {
+  margin: 0 0 var(--spacing-sm) 0;
+  font-size: var(--font-size-md);
+}
+
+.participantes ul {
+  list-style: none;
+  margin: 0 0 var(--spacing-md) 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: var(--font-size-sm);
+}
+
+.chat {
+  display: flex;
+  flex-direction: column;
+  min-height: 320px;
+}
+
+.chatMensagens {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: var(--spacing-sm);
+  max-height: 320px;
+}
+
+.chatMsg {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  word-break: break-word;
+}
+
+.chatForm {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.chatForm input {
+  flex: 1;
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(127, 127, 255, 0.3);
+  background: rgba(0, 0, 0, 0.4);
+  color: var(--color-text-white);
+}
+
+.chatForm button {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  border: none;
+  background: var(--color-primary);
+  color: var(--color-text-white);
+  cursor: pointer;
+}
+
+/* Responsivo: empilha as colunas em telas menores */
+@media (max-width: 900px) {
+  .layout {
+    flex-direction: column;
+  }
+  .sideColumn {
+    max-width: 100%;
+    width: 100%;
+  }
+}

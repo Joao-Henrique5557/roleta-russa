@@ -55,6 +55,28 @@ services:
       db:
         condition: service_healthy
 
+  # Backend Node.js - reimplementação de estudo dos mesmos endpoints REST do
+  # backend Java (ver roleta-russa-backend-node/README.md), e hospeda também
+  # o servidor de multiplayer (Socket.IO: salas, chat, estado do jogo).
+  # O backend "principal" do projeto continua sendo o Java (serviço acima).
+  backend-node:
+    build:
+      context: ./roleta-russa-backend-node
+      dockerfile: Dockerfile
+    container_name: roleta-russa-backend-node
+    ports:
+      - "3001:3000"
+    environment:
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_NAME: roleta_russa
+      DB_USER: root
+      DB_PASSWORD: ${DB_PASSWORD:-NovaSenhaForte123!}
+      ALLOWED_ORIGINS: http://localhost:5173
+    depends_on:
+      db:
+        condition: service_healthy
+
   frontend:
     build:
       context: ./roleta-russa-frontend
@@ -68,8 +90,11 @@ services:
       # Por isso é "localhost:8080" e NÃO "backend:8080" (nome só resolvível
       # dentro da rede interna do Docker, que o navegador não enxerga).
       VITE_API_URL: http://localhost:8080
+      # URL do servidor de multiplayer (Socket.IO), rodando no backend Node.
+      VITE_SOCKET_URL: http://localhost:3001
     depends_on:
       - backend
+      - backend-node
 
 volumes:
   db_data:

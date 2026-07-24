@@ -1,0 +1,168 @@
+package controller;
+
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import model.Beans.Usuario;
+import util.ConnectionFactory;
+import util.JsonResponse;
+import util.ValidationUtil;
+import dao.UsuarioDAO;
+
+/**
+ * POST /DevSql
+ *
+ * Backend do "Terminal SQL" que aparece na Área de DEV Vip da tela de
+ * Perfil (PerfilPage.jsx). Este é o backend PRINCIPAL do projeto, então
+ * essa funcionalidade tem que existir aqui - a versão em
+ * roleta-russa-backend-node/src/routes/dev.js é só o espelho de estudo.
+ *
+ * Body esperado (JSON): {"usuarioId": "3", "sql": "SELECT * FROM usuarios"}
+ *
+ * ====================== AVISO DE SEGURANÇA ======================
+ * Executar SQL arbitrário vindo do cliente é perigoso por natureza - é
+ * literalmente um "SQL Injection de propósito", já que o próprio texto
+ * digitado pela pessoa DEV vira o comando executado no banco. Isso só é
+ * aceitável neste projeto porque:
+ *   1. Ele roda 100% local, nada exposto na internet;
+ *   2. O acesso exige cargo = 'DEV', verificado aqui no SERVIDOR (nunca
+ *      confie só na checagem que o React faz na tela - qualquer pessoa
+ *      pode abrir o DevTools e "forjar" esse valor no front-end);
+ *   3. O objetivo é aprender como um painel administrativo simples se
+ *      conecta direto no banco - não é uma feature pensada pra produção.
+ * Se este projeto algum dia for exposto publicamente, ESTE SERVLET DEVE
+ * SER REMOVIDO (ou protegido por autenticação forte + rede interna).
+ * ==================================================================
+ */
+@WebServlet("/DevSql")
+public class DevSqlServlet extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+
+	@Override
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		request.setCharacterEncoding("UTF-8");
+
+		// O corpo chega como JSON (e não como application/x-www-form-urlencoded,
+		// diferente dos outros servlets), então lemos e parseamos manualmente.
+		StringBuilder corpo = new StringBuilder();
+		try (var reader = request.getReader()) {
+			String linha;
+			while ((linha = reader.readLine()) != null) {
+				corpo.append(linha);
+			}
+		}
+
+		String usuarioId;
+		String sql;
+		try {
+			JsonObject json = JsonParser.parseString(corpo.toString()).getAsJsonObject();
+			usuarioId = json.has("usuarioId") ? json.get("usuarioId").getAsString() : null;
+			sql = json.has("sql") ? json.get("sql").getAsString() : null;
+		} catch (Exception e) {
+			JsonResponse.error(response, HttpServletResponse.SC_BAD_REQUEST, "Corpo JSON inválido.");
+			return;
+		}
+
+		if (ValidationUtil.isBlank(usuarioId) || ValidationUtil.isBlank(sql)) {
+			JsonResponse.error(response, HttpServletResponse.SC_BAD_REQUEST,
+					"Campos 'usuarioId' e 'sql' são obrigatórios.");
+			return;
+		}
+
+		// Confirma no banco (não confia no front-end) que o usuário é DEV.
+		UsuarioDAO usuarioDAO = new UsuarioDAO();
+		Usuario usuario = usuarioDAO.buscarPorId(usuarioId);
+		if (usuario == null || !"DEV".equals(usuario.getCargo())) {
+			JsonResponse.error(response, HttpServletResponse.SC_FORBIDDEN,
+					"Acesso negado: apenas usuários com cargo DEV podem usar o terminal SQL.");
+			return;
+		}
+
+		// Bloqueia múltiplos comandos separados por ";" numa única chamada -
+		// reduz o risco de colar um script inteiro sem querer.
+		String[] comandos = sql.split(";");
+		int comandosNaoVazios = 0;
+		String comandoUnico = null;
+		for (String c : comandos) {
+			if (!c.trim().isEmpty()) {
+				comandosNaoVazios++;
+				comandoUnico = c.trim();
+			}
+		}
+		if (comandosNaoVazios > 1) {
+			JsonResponse.error(response, HttpServletResponse.SC_BAD_REQUEST,
+					"Execute um comando SQL por vez (sem ';' entre comandos).");
+			return;
+		}
+		if (comandosNaoVazios == 0) {
+			JsonResponse.error(response, HttpServletResponse.SC_BAD_REQUEST, "Comando SQL vazio.");
+			return;
+		}
+
+		long inicio = System.currentTimeMillis();
+		boolean ehSelect = comandoUnico.trim().toUpperCase().startsWith("SELECT")
+				|| comandoUnico.trim().toUpperCase().startsWith("SHOW")
+				|| comandoUnico.trim().toUpperCase().startsWith("DESCRIBE");
+
+		try (Connection conn = ConnectionFactory.getConnection()) {
+			if (ehSelect) {
+				try (PreparedStatement stmt = conn.prepareStatement(comandoUnico);
+						ResultSet rs = stmt.executeQuery()) {
+					ResultSetMetaData meta = rs.getMetaData();
+					int colunas = meta.getColumnCount();
+					List<String> nomesColunas = new ArrayList<>();
+					for (int i = 1; i <= colunas; i++) {
+						nomesColunas.add(meta.getColumnLabel(i));
+					}
+
+					List<Map<String, Object>> linhas = new ArrayList<>();
+					while (rs.next()) {
+						Map<String, Object> linha = new LinkedHashMap<>();
+						for (int i = 1; i <= colunas; i++) {
+							linha.put(nomesColunas.get(i - 1), rs.getObject(i));
+						}
+						linhas.add(linha);
+					}
+
+					JsonObject resultado = new JsonObject();
+					resultado.addProperty("tipo", "select");
+					resultado.add("colunas", util.JsonResponse.toJsonElement(nomesColunas));
+					resultado.add("linhas", util.JsonResponse.toJsonElement(linhas));
+					resultado.addProperty("totalLinhas", linhas.size());
+					resultado.addProperty("duracaoMs", System.currentTimeMillis() - inicio);
+					JsonResponse.ok(response, resultado);
+				}
+			} else {
+				try (Statement stmt = conn.createStatement()) {
+					int linhasAfetadas = stmt.executeUpdate(comandoUnico);
+					JsonObject resultado = new JsonObject();
+					resultado.addProperty("tipo", "escrita");
+					resultado.addProperty("linhasAfetadas", linhasAfetadas);
+					resultado.addProperty("duracaoMs", System.currentTimeMillis() - inicio);
+					JsonResponse.ok(response, resultado);
+				}
+			}
+		} catch (SQLException e) {
+			JsonResponse.error(response, HttpServletResponse.SC_BAD_REQUEST,
+					"Erro ao executar SQL: " + e.getMessage());
+		}
+	}
+}

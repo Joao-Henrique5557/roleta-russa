@@ -5,6 +5,15 @@ import { useSoundEffect } from "../../hooks/useSoundEffect";
 import axios from "axios";
 import { useToast } from "../../context/ToastContext";
 import { getErrorMessage } from "../../utils/apiError";
+// Itens/power-ups (cigarro, algemas, lupa, cerveja, serrote) - lógica pura
+// e reaproveitada também pelo multiplayer (veja src/game/powerUps.js).
+import {
+  ITENS,
+  sortearItens,
+  somarInventarios,
+  usarItem as aplicarUsoDeItem,
+  resolverPulosDeVez,
+} from "../../game/powerUps";
 
 // ---- Lógica do revólver ----
 
@@ -51,16 +60,33 @@ function gerarBalas(dificuldade) {
 // Função que retorna o estado inicial do jogo, com base na dificuldade escolhida
 function estadoInicial(dificuldade) {
   const { balas, quantVerdadeiras } = gerarBalas(dificuldade);
+  // Cada lado começa com 1 item aleatório em mãos - o resto vem a cada
+  // recarga do revólver (ver recarregar() logo abaixo).
   return {
     fase: "jogando",
     dificuldade,
     rodada: 1,
     vezDe: "jogador",
-    jogador: { vidas: 3, alive: true },
-    bot: { vidas: 3, alive: true },
+    jogador: {
+      vidas: 3,
+      maxVidas: 3,
+      alive: true,
+      itens: sortearItens(1),
+      serraAtiva: false,
+      pulaProximaVez: false,
+    },
+    bot: {
+      vidas: 3,
+      maxVidas: 3,
+      alive: true,
+      itens: sortearItens(1),
+      serraAtiva: false,
+      pulaProximaVez: false,
+    },
     balas,
     posAtual: 0,
     quantVerdadeiras,
+    balaRevelada: null, // preenchido quando alguém usa a Lupa
     log: [
       `🔫 Rodada 1 iniciada — ${balas.length} câmaras, ${quantVerdadeiras} bala(s) real(is).`,
     ],
@@ -74,15 +100,33 @@ function recarregar(estado, playRecarga) {
   playRecarga();
 
   const { balas, quantVerdadeiras } = gerarBalas(estado.dificuldade);
+
+  // A cada recarga, os dois lados ganham 1-2 itens novos (sorteados) -
+  // imita o jogo original, onde cada rodada nova traz itens novos pra
+  // mudar a estratégia. somarInventarios() soma sem sobrescrever o que
+  // já tinha em mãos.
+  const itensGanhosJogador = sortearItens(1 + Math.round(Math.random()));
+  const itensGanhosBot = sortearItens(1 + Math.round(Math.random()));
+
   return {
     ...estado,
     balas,
     posAtual: 0,
     quantVerdadeiras,
+    balaRevelada: null,
     rodada: estado.rodada + 1,
+    jogador: {
+      ...estado.jogador,
+      itens: somarInventarios(estado.jogador.itens, itensGanhosJogador),
+    },
+    bot: {
+      ...estado.bot,
+      itens: somarInventarios(estado.bot.itens, itensGanhosBot),
+    },
     log: [
       ...estado.log,
       `🔁 Revólver recarregado — Rodada ${estado.rodada + 1} | ${balas.length} câmaras, ${quantVerdadeiras} bala(s) real(is).`,
+      `🎁 Novos itens distribuídos para os dois lados.`,
     ],
   };
 }
@@ -96,6 +140,10 @@ function atirar(estado, alvo, playTiro, playRecarga, playBalaFalsa) {
   let novoBot = { ...estado.bot }; // nova "versão" da mesma coisa
   let logEntry;
   let mudaVez;
+
+  // Quem está atirando agora, pra saber de quem consultar/consumir a
+  // "serra" (dano dobrado) - item explicado em src/game/powerUps.js.
+  const atirador = estado.vezDe === "jogador" ? novoJogador : novoBot;
 
   if (alvo === "self") {
     const quemAtira = estado.vezDe === "jogador" ? "Você" : "Bot"; // quem atira é eu?
@@ -121,13 +169,20 @@ function atirar(estado, alvo, playTiro, playRecarga, playBalaFalsa) {
     const fraseAlvo = estado.vezDe === "jogador" ? "no Bot" : "em você"; // ex1. no bot
 
     if (isVerdadeira) {
-      // se for verdadeira
-      logEntry = `💥 ${quemAtira} atirou ${fraseAlvo} — bala REAL! -1 vida.`; // log
+      // dano dobrado se o atirador tiver usado o Serrote (🪚) antes -
+      // consumido aqui, no momento em que realmente acerta o oponente.
+      const dano = atirador.serraAtiva ? 2 : 1;
+      const sufixoSerra = atirador.serraAtiva ? " (🪚 dano dobrado!)" : "";
+      logEntry = `💥 ${quemAtira} atirou ${fraseAlvo} — bala REAL! -${dano} vida.${sufixoSerra}`; // log
 
       playTiro(); // toca o som do tiro
-      if (estado.vezDe === "jogador")
-        novoBot.vidas -= 1; // se a vez for minha, tiro no bot, então ele perde vida
-      else novoJogador.vidas -= 1; // se for a vez do bot, tiro em mim, então eu perco vida
+      if (estado.vezDe === "jogador") {
+        novoBot.vidas -= dano; // se a vez for minha, tiro no bot, então ele perde vida
+        novoJogador = { ...novoJogador, serraAtiva: false }; // consome o item
+      } else {
+        novoJogador.vidas -= dano; // se for a vez do bot, tiro em mim, então eu perco vida
+        novoBot = { ...novoBot, serraAtiva: false };
+      }
     } else {
       playBalaFalsa();
       logEntry = `💨 ${quemAtira} atirou ${fraseAlvo} — bala falsa.`;
@@ -138,18 +193,28 @@ function atirar(estado, alvo, playTiro, playRecarga, playBalaFalsa) {
   if (novoJogador.vidas <= 0) novoJogador.alive = false; // se eu não tiver vida: morrer
   if (novoBot.vidas <= 0) novoBot.alive = false; // se o bot não tiver vida: morrer
 
+  // Calcula de quem SERIA a próxima vez, e então checa se essa pessoa
+  // está algemada (item 🔗) - se estiver, ela é pulada e a vez volta pra
+  // quem acabou de atirar (ver resolverPulosDeVez em powerUps.js).
+  const candidatoProximaVez = mudaVez
+    ? estado.vezDe === "jogador"
+      ? "bot"
+      : "jogador"
+    : estado.vezDe;
+  const { vezDe: vezDeFinal, jogador: jogadorAposPulo, bot: botAposPulo, logExtra } =
+    resolverPulosDeVez({ jogador: novoJogador, bot: novoBot }, estado.vezDe, candidatoProximaVez);
+  if (jogadorAposPulo) novoJogador = jogadorAposPulo;
+  if (botAposPulo) novoBot = botAposPulo;
+
   // novo estado apos o tiro
   let novoEstado = {
     ...estado,
     jogador: novoJogador,
     bot: novoBot,
     posAtual: novoPos,
-    log: [...estado.log, logEntry], // adiciona logEntry na lista
-    vezDe: mudaVez // calcula a vez automaticamente
-      ? estado.vezDe === "jogador" // se a vez for do jogador, passa para o bot, senão fica com o jogador
-        ? "bot"
-        : "jogador"
-      : estado.vezDe, // senão for jogador, quem então? bot
+    balaRevelada: null, // qualquer tiro "consome" a informação que a Lupa tinha revelado
+    log: logExtra ? [...estado.log, logEntry, logExtra] : [...estado.log, logEntry],
+    vezDe: vezDeFinal,
   };
 
   if (!novoJogador.alive || !novoBot.alive) {
@@ -242,6 +307,25 @@ export default function SingleplayerGame({ onBack, onConfig, urlAPI }) {
     [playTiro, playRecarga, playBalaFalsa],
   );
 
+  // Usar um item do inventário (cigarro/algemas/lupa/cerveja/serra).
+  // Diferente de agir(), NÃO passa a vez pro bot - por isso não mexe em
+  // "esperandoBot". A cerveja é a exceção que avança a câmara (pode
+  // disparar recarregar() por dentro de usarItem -> aqui não, porque a
+  // recarga só acontece via atirar(); a cerveja em powerUps.js só avança
+  // posAtual, então se ela esvaziar o tambor a próxima ação (atirar) é
+  // quem vai recarregar. Isso é intencional e simplifica a lógica.
+  const usarItemHandler = useCallback((itemId) => {
+    setEstado((prev) => {
+      if (!prev || prev.fase !== "jogando" || prev.vezDe !== "jogador") return prev;
+      const { estado: novoEstado, sucesso, mensagem } = aplicarUsoDeItem(prev, "jogador", itemId);
+      if (!sucesso) {
+        showToast(mensagem, "info");
+        return prev;
+      }
+      return { ...novoEstado, log: [...novoEstado.log, mensagem] };
+    });
+  }, [showToast]);
+
   // roda toda rederização [estado, playTiro, playRecarga], para verificar se o bot está jogando.
   useEffect(() => {
     // se o estado não existir, ou o bot não estiver esperando ou a fase é diferente de "jogando", então não faz nada
@@ -279,9 +363,24 @@ export default function SingleplayerGame({ onBack, onConfig, urlAPI }) {
         // se probalidade baixa, atirar em vc mesmo, senão no oponente
         const botAlvo = probVerdadeira < 0.4 ? "self" : "opponent";
 
+        // ---- IA simples de uso de itens ----
+        // Antes de decidir o tiro, o bot pode usar itens (não consome a
+        // vez - ver ITENS[x].usaTurno em powerUps.js). Regras bobas de
+        // propósito (é só um bot de estudo, não uma IA sofisticada):
+        //   - Se estiver com 1 vida e tiver cigarro, sempre se cura.
+        //   - Se for atirar no oponente e tiver serrote, 50% de chance de
+        //     usar (dano dobrado se acertar).
+        let estadoComItens = prev;
+        if (prev.bot.vidas <= 1 && (prev.bot.itens?.cigarro || 0) > 0) {
+          estadoComItens = aplicarUsoDeItem(estadoComItens, "bot", "cigarro").estado;
+        }
+        if (botAlvo === "opponent" && (estadoComItens.bot.itens?.serra || 0) > 0 && Math.random() < 0.5) {
+          estadoComItens = aplicarUsoDeItem(estadoComItens, "bot", "serra").estado;
+        }
+
         // depois = atirar no alvo
         const depois = atirar(
-          prev,
+          estadoComItens,
           botAlvo,
           playTiro,
           playRecarga,
@@ -307,6 +406,7 @@ export default function SingleplayerGame({ onBack, onConfig, urlAPI }) {
       !pontosEnviados
     ) {
       ganharPontos(urlAPI, showToast);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- flag de "já enviei os pontos desta partida", não sincroniza UI com sistema externo
       setPontosEnviados(true);
     }
   }, [estado, pontosEnviados, urlAPI, showToast]);
@@ -545,6 +645,35 @@ export default function SingleplayerGame({ onBack, onConfig, urlAPI }) {
                 : ""}
           </p>
         </div>
+
+        {/* ---- INVENTÁRIO DE ITENS (power-ups) ---- */}
+        {/* Cada botão mostra quantas unidades você tem daquele item; fica
+            desabilitado se a quantidade for 0 ou não for sua vez. Usar um
+            item NÃO passa o turno (ver usarItemHandler acima). */}
+        <div className={styles.inventory}>
+          {Object.values(ITENS).map((item) => {
+            const quantidade = jogador?.itens?.[item.id] || 0;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                className={styles.itemBtn}
+                title={item.descricao}
+                onClick={() => usarItemHandler(item.id)}
+                disabled={!podeAgir || quantidade <= 0}
+              >
+                <span className={styles.itemIcone}>{item.icone}</span>
+                <span className={styles.itemNome}>{item.nome}</span>
+                <span className={styles.itemQtd}>x{quantidade}</span>
+              </button>
+            );
+          })}
+        </div>
+        {estado.balaRevelada !== null && (
+          <p className={styles.lupaAviso}>
+            🔍 A bala na câmara atual é {estado.balaRevelada ? "REAL 🔴" : "FALSA ⚪"}.
+          </p>
+        )}
 
         <div className={styles.actions}>
           <button

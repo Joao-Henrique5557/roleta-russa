@@ -1,0 +1,14 @@
+/* Estilos globais mínimos - este laboratório não usa CSS Modules em tudo
+   de propósito, pra manter o exemplo simples. */
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: #0d0d1a;
+  color: #fff;
+}
+code {
+  background: rgba(255,255,255,0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+}

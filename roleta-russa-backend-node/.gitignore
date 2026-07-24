@@ -1,7 +1,4 @@
-# Node.js
-
 node_modules
-
-# IDEs
-
-.vscode/*
+.env
+.env.local
+npm-debug.log*

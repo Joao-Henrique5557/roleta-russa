@@ -1,0 +1,45 @@
+// prisma/schema.prisma
+//
+// Descreve, em formato declarativo, as MESMAS tabelas que já existem em
+// db/schema.sql (na raiz do projeto) - este laboratório não cria tabelas
+// novas, só "aprende a ler" as que os backends Java/Node já usam.
+//
+// CONCEITO: isso é chamado de "schema-first" - você descreve como os
+// dados DEVERIAM ser, e roda `prisma db pull` (introspecção) pra
+// conferir contra o banco real, ou `prisma migrate` se quisesse que o
+// Prisma fosse o dono das migrações (não é o caso aqui - o dono das
+// migrações deste projeto é o db/schema.sql).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id            Int      @id @default(autoincrement())
+  nome          String   @db.VarChar(60)
+  email         String   @unique @db.VarChar(120)
+  senha         String   @db.VarChar(64) // hash SHA-256 - nunca texto puro
+  pontos        Int      @default(0)
+  cargo         String   @default("usuario") @db.VarChar(30)
+  dataCadastro  DateTime @default(now()) @map("data_cadastro")
+
+  @@map("usuarios") // nome real da tabela no MySQL (snake_case)
+}
+
+model Novidade {
+  id              Int      @id @default(autoincrement())
+  titulo          String   @db.VarChar(120)
+  descricao       String   @db.Text
+  tipo            String   @db.VarChar(40)
+  autor           String   @default("Anônimo") @db.VarChar(60)
+  versao          String   @default("1.0.0") @db.VarChar(20)
+  dataPublicacao  DateTime @default(now()) @map("data_publicacao")
+  ativo           Boolean  @default(true)
+
+  @@map("novidades")
+}

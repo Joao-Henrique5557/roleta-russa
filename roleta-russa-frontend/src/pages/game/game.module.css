@@ -200,6 +200,48 @@
   min-height: 1.2em;
 }
 
+/* ---- INVENTÁRIO / ITENS (power-ups) ---- */
+.inventory {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.itemBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 64px;
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(159, 159, 255, 0.35);
+  background: rgba(127, 127, 255, 0.08);
+  color: var(--color-text-white);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.itemBtn:hover:not(:disabled) {
+  background: rgba(127, 127, 255, 0.2);
+  transform: translateY(-2px);
+}
+.itemBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.itemIcone { font-size: 22px; line-height: 1; }
+.itemNome { font-size: 11px; opacity: 0.85; }
+.itemQtd { font-size: 11px; font-weight: var(--font-weight-bold); color: var(--color-secondary-light); }
+
+.lupaAviso {
+  text-align: center;
+  margin: 0;
+  padding: var(--spacing-xs) var(--spacing-md);
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+}
+
 /* ---- ACTION BUTTONS ---- */
 .actions {
   display: grid;

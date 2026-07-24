@@ -11,10 +11,11 @@ Home.propTypes = {
   onConfig: PropTypes.func.isRequired,
   onSingleplayer: PropTypes.func.isRequired,
   onMultiplayer: PropTypes.func.isRequired,
+  onEstudos: PropTypes.func,
   onLogout: PropTypes.func.isRequired,
 };
 
-function Home({ onConfig, onSingleplayer, onMultiplayer, onLogout, urlAPI, onPerfil }) {
+function Home({ onConfig, onSingleplayer, onMultiplayer, onEstudos, onLogout, urlAPI, onPerfil }) {
   return (
     <div className={styles.home}>
       <ConfigBtn onConfig={onConfig} />
@@ -29,6 +30,7 @@ function Home({ onConfig, onSingleplayer, onMultiplayer, onLogout, urlAPI, onPer
           onSingleplayer={onSingleplayer}
           onMultiplayer={onMultiplayer}
           onPerfil={onPerfil}
+          onEstudos={onEstudos}
         />
         <Ranking urlAPI={urlAPI}/>
         <Novidades urlAPI={urlAPI}/>

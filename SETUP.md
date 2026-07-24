@@ -49,7 +49,8 @@ e as tabelas automaticamente (usando `db/schema.sql`) — não precisa rodar
 nenhum comando SQL manual.
 
 - Frontend: **http://localhost:5173**
-- Backend: **http://localhost:8080**
+- Backend (Java, principal): **http://localhost:8080**
+- Backend (Node, estudo + multiplayer): **http://localhost:3001**
 - Checagem rápida do banco: **http://localhost:8080/Status** → deve
   retornar `"bancoConectado": true`
 
@@ -227,6 +228,21 @@ primeira execução (criando o volume do zero) isso pode levar alguns
 segundos a mais. Espera um pouco e testa `GET http://localhost:8080/Status`
 de novo. Se persistir, roda `docker compose logs db` e `docker compose logs backend`
 e confira as duas saídas.
+
+### Multiplayer não conecta / lista de salas fica vazia pra sempre
+
+O multiplayer depende do backend Node (`backend-node`, porta 3001), não do
+backend Java. Confira:
+
+```bash
+docker compose logs backend-node
+curl http://localhost:3001/Status
+```
+
+Se `VITE_SOCKET_URL` estiver apontando pra outro lugar (ex: você mudou a
+porta no `docker-compose.yml` mas esqueceu de atualizar o `.env` do
+front-end), o `src/services/socket.js` nunca vai conseguir abrir a conexão
+WebSocket, e a lista de salas fica eternamente "Carregando...".
 
 ### `net::ERR_NAME_NOT_RESOLVED` em `backend:8080` no console do navegador
 

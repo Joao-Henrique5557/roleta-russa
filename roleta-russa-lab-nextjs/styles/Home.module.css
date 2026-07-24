@@ -1,0 +1,21 @@
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+.aviso {
+  background: rgba(255, 200, 50, 0.1);
+  border: 1px solid rgba(255, 200, 50, 0.3);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+.tabela th, .tabela td {
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+  padding: 8px 12px;
+  text-align: left;
+}

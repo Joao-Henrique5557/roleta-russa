@@ -83,3 +83,89 @@ h1{
     text-align: center;
     margin-top: 20px;
 }
+
+/* ---- ÁREA DEV: terminal SQL ---- */
+.btnAtualizar {
+    background-color: transparent;
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    border-radius: 8px;
+    padding: 6px 14px;
+    cursor: pointer;
+    margin: 8px auto;
+    display: block;
+}
+.btnAtualizar:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.terminalBotoes {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
+}
+.btnExecutar {
+    background-color: #2e7d32;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-weight: bold;
+}
+.btnExecutar:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.terminalErro {
+    color: #ff6b6b;
+    background: rgba(255,107,107,0.1);
+    border: 1px solid rgba(255,107,107,0.3);
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-top: 10px;
+}
+
+.terminalMeta {
+    font-size: 13px;
+    color: rgba(255,255,255,0.7);
+    margin: 10px 0 4px 0;
+}
+
+.terminalResultado { margin-top: 10px; }
+.terminalTabelaWrapper {
+    max-height: 320px;
+    overflow: auto;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px;
+}
+.terminalTabela {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 13px;
+    font-family: monospace;
+}
+.terminalTabela th, .terminalTabela td {
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding: 6px 10px;
+    text-align: left;
+    white-space: nowrap;
+}
+.terminalTabela th {
+    background: rgba(255,255,255,0.08);
+    position: sticky;
+    top: 0;
+}
+
+.terminalHistorico { margin-top: 12px; font-size: 13px; }
+.terminalHistorico ul { list-style: none; padding: 0; margin: 4px 0 0 0; display: flex; flex-direction: column; gap: 4px; }
+.terminalHistorico button {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #ddd;
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-family: monospace;
+    text-align: left;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
