@@ -71,13 +71,36 @@ export default function MultiplayerLobby({ onBack, onConfig, onEntrarNaSala }) {
     const socket = getSocket();
     socket.emit(
       "lobby:criar",
-      { nome: nomeSala.trim(), privada, senha: senhaCriar, nomeJogador: meuNome.trim() },
+      {
+        nome: nomeSala.trim(),
+        privada,
+        senha: senhaCriar,
+        nomeJogador: meuNome.trim(),
+      },
       (resposta) => {
         if (resposta?.erro) return showToast(resposta.erro, "error");
+        // O código (resposta.sala.id) é diferente do NOME da sala - é ele
+        // que precisa ser compartilhado pra alguém entrar, principalmente
+        // em sala privada (que não aparece na lista pública). O código
+        // também fica visível o tempo todo no header da sala, mas esse
+        // toast garante que quem acabou de criar já veja de cara.
+        showToast(
+          `Sala criada! Código para convidar: ${resposta.sala.id}`,
+          "success",
+          8000,
+        );
         onEntrarNaSala(resposta.sala, meuNome.trim());
       },
     );
-  }, [nomeSala, privada, senhaCriar, meuNome, nomeValido, showToast, onEntrarNaSala]);
+  }, [
+    nomeSala,
+    privada,
+    senhaCriar,
+    meuNome,
+    nomeValido,
+    showToast,
+    onEntrarNaSala,
+  ]);
 
   const entrarNaSala = useCallback(
     (salaId, senha, comoEspectador) => {
@@ -103,14 +126,20 @@ export default function MultiplayerLobby({ onBack, onConfig, onEntrarNaSala }) {
           <p>Entre em uma sala existente ou crie a sua própria partida.</p>
         </div>
         <div className={styles.pageActions}>
-          <button className={styles.secondaryButton} onClick={onConfig}>Configurações</button>
-          <button className={styles.primaryButton} onClick={onBack}>Voltar</button>
+          <button className={styles.secondaryButton} onClick={onConfig}>
+            Configurações
+          </button>
+          <button className={styles.primaryButton} onClick={onBack}>
+            Voltar
+          </button>
         </div>
       </div>
 
       <div className={styles.gameCard}>
         <div className={styles.configSection}>
-          <label htmlFor="meu-nome">Seu nome (mostrado pra outros na sala)</label>
+          <label htmlFor="meu-nome">
+            Seu nome (mostrado pra outros na sala)
+          </label>
           <input
             id="meu-nome"
             type="text"
@@ -118,26 +147,40 @@ export default function MultiplayerLobby({ onBack, onConfig, onEntrarNaSala }) {
             onChange={(e) => setMeuNome(e.target.value)}
             placeholder="Ex: joao123"
             maxLength={30}
-            style={{ padding: 8, borderRadius: 8, border: "1px solid rgba(127,127,255,0.3)", background: "rgba(0,0,0,0.4)", color: "#fff" }}
+            style={{
+              padding: 8,
+              borderRadius: 8,
+              border: "1px solid rgba(127,127,255,0.3)",
+              background: "rgba(0,0,0,0.4)",
+              color: "#fff",
+            }}
           />
         </div>
 
         <p className={styles.gameCardHeader}>Salas públicas disponíveis</p>
         {carregando && <p>Carregando salas...</p>}
-        {!carregando && salas.length === 0 && <p>Nenhuma sala pública aberta no momento. Crie a sua!</p>}
+        {!carregando && salas.length === 0 && (
+          <p>Nenhuma sala pública aberta no momento. Crie a sua!</p>
+        )}
         <div className={styles.roomList}>
           {salas.map((sala) => (
             <div key={sala.id} className={styles.roomItem}>
               <div>
                 <strong>{sala.nome}</strong>
                 <span>
-                  Anfitrião: {sala.hostNome} · {sala.qtdJogadores}/{sala.maxJogadores} jogando ·{" "}
-                  {sala.qtdEspectadores} assistindo
+                  Anfitrião: {sala.hostNome} · {sala.qtdJogadores}/
+                  {sala.maxJogadores} jogando · {sala.qtdEspectadores}{" "}
+                  assistindo
                 </span>
               </div>
               <div style={{ display: "flex", gap: 8 }}>
-                <button className={styles.primaryButton} onClick={() => entrarNaSala(sala.id, null, false)}>
-                  {sala.qtdJogadores >= sala.maxJogadores ? "Assistir" : "Jogar"}
+                <button
+                  className={styles.primaryButton}
+                  onClick={() => entrarNaSala(sala.id, null, false)}
+                >
+                  {sala.qtdJogadores >= sala.maxJogadores
+                    ? "Assistir"
+                    : "Jogar"}
                 </button>
               </div>
             </div>
@@ -146,24 +189,45 @@ export default function MultiplayerLobby({ onBack, onConfig, onEntrarNaSala }) {
 
         <div className={styles.roomFooter}>
           <p>Tem o código de uma sala privada? Entre direto aqui:</p>
-          <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+          <div
+            style={{
+              display: "flex",
+              gap: 8,
+              justifyContent: "center",
+              flexWrap: "wrap",
+            }}
+          >
             <input
               type="text"
               placeholder="Código da sala"
               value={codigoSala}
               onChange={(e) => setCodigoSala(e.target.value)}
-              style={{ padding: 8, borderRadius: 8, border: "1px solid rgba(127,127,255,0.3)", background: "rgba(0,0,0,0.4)", color: "#fff" }}
+              style={{
+                padding: 8,
+                borderRadius: 8,
+                border: "1px solid rgba(127,127,255,0.3)",
+                background: "rgba(0,0,0,0.4)",
+                color: "#fff",
+              }}
             />
             <input
               type="password"
               placeholder="Senha (se privada)"
               value={senhaEntrar}
               onChange={(e) => setSenhaEntrar(e.target.value)}
-              style={{ padding: 8, borderRadius: 8, border: "1px solid rgba(127,127,255,0.3)", background: "rgba(0,0,0,0.4)", color: "#fff" }}
+              style={{
+                padding: 8,
+                borderRadius: 8,
+                border: "1px solid rgba(127,127,255,0.3)",
+                background: "rgba(0,0,0,0.4)",
+                color: "#fff",
+              }}
             />
             <button
               className={styles.secondaryButton}
-              onClick={() => entrarNaSala(codigoSala.trim(), senhaEntrar, false)}
+              onClick={() =>
+                entrarNaSala(codigoSala.trim(), senhaEntrar, false)
+              }
               disabled={!codigoSala.trim()}
             >
               Entrar
@@ -171,17 +235,35 @@ export default function MultiplayerLobby({ onBack, onConfig, onEntrarNaSala }) {
           </div>
 
           {mostrarCriar ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "center", marginTop: 16 }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 8,
+                alignItems: "center",
+                marginTop: 16,
+              }}
+            >
               <input
                 type="text"
                 placeholder="Nome da sala"
                 value={nomeSala}
                 onChange={(e) => setNomeSala(e.target.value)}
                 autoFocus
-                style={{ padding: 8, borderRadius: 8, border: "1px solid rgba(127,127,255,0.3)", background: "rgba(0,0,0,0.4)", color: "#fff" }}
+                style={{
+                  padding: 8,
+                  borderRadius: 8,
+                  border: "1px solid rgba(127,127,255,0.3)",
+                  background: "rgba(0,0,0,0.4)",
+                  color: "#fff",
+                }}
               />
               <label style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                <input type="checkbox" checked={privada} onChange={(e) => setPrivada(e.target.checked)} />
+                <input
+                  type="checkbox"
+                  checked={privada}
+                  onChange={(e) => setPrivada(e.target.checked)}
+                />
                 Sala privada (precisa de senha pra entrar)
               </label>
               {privada && (
@@ -190,18 +272,36 @@ export default function MultiplayerLobby({ onBack, onConfig, onEntrarNaSala }) {
                   placeholder="Senha da sala"
                   value={senhaCriar}
                   onChange={(e) => setSenhaCriar(e.target.value)}
-                  style={{ padding: 8, borderRadius: 8, border: "1px solid rgba(127,127,255,0.3)", background: "rgba(0,0,0,0.4)", color: "#fff" }}
+                  style={{
+                    padding: 8,
+                    borderRadius: 8,
+                    border: "1px solid rgba(127,127,255,0.3)",
+                    background: "rgba(0,0,0,0.4)",
+                    color: "#fff",
+                  }}
                 />
               )}
               <div style={{ display: "flex", gap: 8 }}>
-                <button className={styles.primaryButton} onClick={criarSala}>Criar sala</button>
-                <button className={styles.secondaryButton} onClick={() => setMostrarCriar(false)}>Cancelar</button>
+                <button className={styles.primaryButton} onClick={criarSala}>
+                  Criar sala
+                </button>
+                <button
+                  className={styles.secondaryButton}
+                  onClick={() => setMostrarCriar(false)}
+                >
+                  Cancelar
+                </button>
               </div>
             </div>
           ) : (
             <>
-              <p style={{ marginTop: 16 }}>Não encontrou uma sala? Crie a sua própria partida.</p>
-              <button className={styles.primaryButton} onClick={() => setMostrarCriar(true)}>
+              <p style={{ marginTop: 16 }}>
+                Não encontrou uma sala? Crie a sua própria partida.
+              </p>
+              <button
+                className={styles.primaryButton}
+                onClick={() => setMostrarCriar(true)}
+              >
                 Criar nova sala
               </button>
             </>

@@ -4,7 +4,6 @@
   align-items: center;
   justify-content: center;
   gap: var(--spacing-md);
-  min-height: 100vh;
   padding: var(--spacing-xl);
   text-align: center;
   background-color: var(--color-bg-light);

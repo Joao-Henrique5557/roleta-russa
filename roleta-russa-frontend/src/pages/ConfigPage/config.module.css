@@ -6,7 +6,6 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  min-height: 100vh;
   background-image:
     linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)),
     url("/images/fundo.png");
@@ -15,7 +14,7 @@
   /* [MOBILE FIX] background-attachment: fixed quebra em iOS */
   background-attachment: scroll;
   color: var(--color-text-white);
-  overflow-y: auto;
+  min-height: 100vh;
 }
 
 .pageHeader {

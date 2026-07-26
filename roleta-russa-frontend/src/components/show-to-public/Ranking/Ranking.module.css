@@ -69,6 +69,29 @@
 .item:nth-child(3)::before {
   background: linear-gradient(135deg, #cd7f32, #8b4513);
 }
+
+/* [CSS FIX] Ranking.jsx renderiza <span> com estas 3 classes, mas nenhuma
+   delas existia neste módulo - as posições, nomes e pontuações apareciam
+   sem nenhum estilo (texto colado, sem destaque, sem alinhamento). */
+.posicao {
+  display: none; /* o número já é mostrado pelo ::before do .item (counter) */
+}
+.nome {
+  flex: 1;
+  text-align: left;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-white);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pontos {
+  flex-shrink: 0;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-secondary-light);
+  font-size: var(--font-size-sm);
+}
+
 @media (max-width: 768px) {
   .ranking {
     width: 100%;

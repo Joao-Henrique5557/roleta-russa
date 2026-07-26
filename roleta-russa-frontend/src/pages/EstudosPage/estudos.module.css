@@ -6,10 +6,9 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  min-height: 100vh;
   background-color: var(--color-bg-light);
   color: var(--color-text-white);
-  overflow-y: auto;
+  min-height: 100vh;
 }
 
 .pageHeader {

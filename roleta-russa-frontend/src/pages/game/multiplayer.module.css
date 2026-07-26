@@ -8,6 +8,7 @@
   padding: 0 var(--spacing-lg) var(--spacing-lg);
   flex: 1;
   align-items: flex-start;
+  min-height: 100vh;
 }
 
 .gameColumn {
@@ -25,6 +26,40 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
+}
+
+.codigoSala {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-xs);
+  padding: 4px var(--spacing-sm);
+  background: rgba(127, 127, 255, 0.1);
+  border: 1px solid rgba(127, 127, 255, 0.25);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+}
+
+.codigoSala strong {
+  color: var(--color-secondary-light);
+  letter-spacing: 0.5px;
+  font-family: monospace;
+}
+
+.codigoSala button {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-white);
+  cursor: pointer;
+  padding: 2px 8px;
+  font-size: var(--font-size-xs);
+  transition: all var(--transition-fast);
+}
+
+.codigoSala button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
 .aviso {

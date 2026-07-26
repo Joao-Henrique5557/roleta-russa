@@ -12,8 +12,16 @@
   color: var(--color-text-white);
 }
 
-.novidades p{
-  width: 200px;
+/* [CSS FIX] A regra antiga era ".novidades p { width: 200px }". Como
+   seletores de elemento em CSS Modules não são isolados por componente,
+   isso também forçava largura fixa de 200px nos <p> internos de
+   <CardNovidade>, espremendo o texto das descrições. O alvo real era só
+   as mensagens de estado (carregando/erro/vazio) renderizadas direto
+   dentro de .novidades - por isso o seletor foi trocado pra ">" (filho
+   direto), que não alcança os <p> de dentro dos cards. */
+.novidades > p {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.75);
 }
 
 @media (max-width: 768px) {

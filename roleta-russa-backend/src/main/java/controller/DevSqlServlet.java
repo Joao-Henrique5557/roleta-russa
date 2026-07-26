@@ -137,7 +137,7 @@ public class DevSqlServlet extends HttpServlet {
 					while (rs.next()) {
 						Map<String, Object> linha = new LinkedHashMap<>();
 						for (int i = 1; i <= colunas; i++) {
-							linha.put(nomesColunas.get(i - 1), rs.getObject(i));
+							linha.put(nomesColunas.get(i - 1), converterValorParaJson(rs.getObject(i)));
 						}
 						linhas.add(linha);
 					}
@@ -164,5 +164,30 @@ public class DevSqlServlet extends HttpServlet {
 			JsonResponse.error(response, HttpServletResponse.SC_BAD_REQUEST,
 					"Erro ao executar SQL: " + e.getMessage());
 		}
+	}
+
+	/**
+	 * Colunas DATETIME/DATE/TIME do MySQL chegam via {@code rs.getObject(i)}
+	 * como {@code java.time.LocalDateTime}/{@code LocalDate}/{@code LocalTime}
+	 * (não como String). O Gson "puro" usado em {@link util.JsonResponse}
+	 * (sem TypeAdapter customizado) serializa objetos desconhecidos via
+	 * reflection nos campos privados deles - e o Java 17 bloqueia esse
+	 * acesso por padrão (o módulo java.base não abre java.time pro
+	 * classloader da aplicação), lançando InaccessibleObjectException e
+	 * derrubando a requisição inteira com 500.
+	 *
+	 * Convertendo aqui pra String evita esse problema pra qualquer tabela/
+	 * coluna de data, sem precisar configurar um Gson customizado só pra
+	 * este endpoint. BLOBs (byte[]) também são tratados, já que exibir
+	 * bytes crus como número por número não ajudaria em nada no terminal.
+	 */
+	private static Object converterValorParaJson(Object valor) {
+		if (valor instanceof java.time.temporal.Temporal) {
+			return valor.toString(); // ex: "2026-07-13T09:12:56"
+		}
+		if (valor instanceof byte[] bytes) {
+			return "<binário: " + bytes.length + " bytes>";
+		}
+		return valor;
 	}
 }

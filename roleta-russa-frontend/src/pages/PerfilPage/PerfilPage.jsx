@@ -4,20 +4,22 @@
 //   1. Dados do usuário (nome, email, pontos, cargo, data de cadastro),
 //      lidos do localStorage e, opcionalmente, atualizados do servidor.
 //   2. "Área de DEV Vip": só aparece pra quem tem cargo === "DEV", e dá
-//      acesso a um terminal que executa SQL DIRETO no banco (veja o aviso
-//      de segurança nos comentários do backend: DevSqlServlet.java /
-//      src/routes/dev.js no backend Node).
+//      acesso ao componente <TerminalSql> (veja
+//      ./TerminalSql/TerminalSql.jsx), que executa SQL DIRETO no banco.
 //
 // IMPORTANTE sobre segurança: o front-end só ESCONDE o terminal de quem
 // não é DEV - isso é só uma questão de experiência de uso (não faz
 // sentido mostrar um botão que vai dar erro 403 pra maioria das pessoas).
 // A validação de verdade (que decide se o comando SQL realmente roda ou
 // não) acontece no BACKEND, olhando o cargo direto no banco. Nunca confie
-// só na checagem do front-end pra proteger algo sensível.
-import { useCallback, useEffect, useState } from "react";
+// só na checagem do front-end pra proteger algo sensível. Veja o aviso
+// completo nos comentários do backend: DevSqlServlet.java (Java) /
+// src/routes/dev.js (Node).
+import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
 import styles from "./perfilPage.module.css";
+import TerminalSql from "../../components/especiais/Terminal/TerminalSql";
 import { useToast } from "../../context/ToastContext";
 import { getErrorMessage } from "../../utils/apiError";
 
@@ -35,116 +37,6 @@ function lerUsuarioLogado() {
     return null;
   }
 }
-
-/** Sub-componente: o terminal SQL da área DEV. Só é montado se cargo === "DEV". */
-function TerminalSql({ urlAPI, usuarioId }) {
-  const [comando, setComando] = useState("SELECT * FROM usuarios LIMIT 10");
-  const [executando, setExecutando] = useState(false);
-  const [resultado, setResultado] = useState(null); // { tipo, colunas, linhas, ... } | { erro }
-  const [historico, setHistorico] = useState([]); // últimos comandos executados
-
-  const executar = useCallback(async () => {
-    if (!comando.trim()) return;
-    setExecutando(true);
-    setResultado(null);
-    try {
-      const { data } = await axios.post(
-        `${urlAPI}/DevSql`,
-        { usuarioId, sql: comando },
-        { timeout: 10000 },
-      );
-      setResultado(data);
-      setHistorico((atual) => [comando, ...atual].slice(0, 10));
-    } catch (error) {
-      // O backend devolve { error: "mensagem" } tanto pra erro de SQL
-      // quanto pra "acesso negado" (cargo não é DEV) - mostramos a
-      // mensagem exatamente como veio.
-      const mensagem = error.response?.data?.error || getErrorMessage(error, "Erro ao executar SQL.");
-      setResultado({ erro: mensagem });
-    } finally {
-      setExecutando(false);
-    }
-  }, [comando, urlAPI, usuarioId]);
-
-  return (
-    <div className={styles.areaDEV}>
-      <p>
-        Terminal SQL — executa comandos DIRETO no MySQL do container. Use com cuidado: não há
-        confirmação antes de um <code>DELETE</code> ou <code>UPDATE</code> sem <code>WHERE</code>.
-      </p>
-      <textarea
-        className={styles.terminalSQL}
-        placeholder="Digite comandos SQL aqui..."
-        value={comando}
-        onChange={(e) => setComando(e.target.value)}
-        onKeyDown={(e) => {
-          // Ctrl+Enter (ou Cmd+Enter no Mac) executa - atalho comum em consoles SQL.
-          if ((e.ctrlKey || e.metaKey) && e.key === "Enter") executar();
-        }}
-        rows={4}
-      />
-      <div className={styles.terminalBotoes}>
-        <button className={styles.btnExecutar} onClick={executar} disabled={executando}>
-          {executando ? "Executando..." : "▶ Executar (Ctrl+Enter)"}
-        </button>
-      </div>
-
-      {resultado?.erro && <p className={styles.terminalErro}>❌ {resultado.erro}</p>}
-
-      {resultado?.tipo === "select" && (
-        <div className={styles.terminalResultado}>
-          <p className={styles.terminalMeta}>
-            {resultado.totalLinhas} linha(s) em {resultado.duracaoMs}ms
-          </p>
-          <div className={styles.terminalTabelaWrapper}>
-            <table className={styles.terminalTabela}>
-              <thead>
-                <tr>
-                  {resultado.colunas.map((c) => (
-                    <th key={c}>{c}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {resultado.linhas.map((linha, i) => (
-                  <tr key={i}>
-                    {resultado.colunas.map((c) => (
-                      <td key={c}>{linha[c] === null ? "NULL" : String(linha[c])}</td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {resultado?.tipo === "escrita" && (
-        <p className={styles.terminalMeta}>
-          ✅ {resultado.linhasAfetadas} linha(s) afetada(s) em {resultado.duracaoMs}ms
-          {resultado.insertId ? ` — novo id: ${resultado.insertId}` : ""}
-        </p>
-      )}
-
-      {historico.length > 0 && (
-        <div className={styles.terminalHistorico}>
-          <p>Últimos comandos:</p>
-          <ul>
-            {historico.map((c, i) => (
-              <li key={i}>
-                <button type="button" onClick={() => setComando(c)}>{c}</button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
-  );
-}
-TerminalSql.propTypes = {
-  urlAPI: PropTypes.string.isRequired,
-  usuarioId: PropTypes.string.isRequired,
-};
 
 const PerfilPage = ({ onBack, urlAPI }) => {
   const { showToast } = useToast();
@@ -168,7 +60,10 @@ const PerfilPage = ({ onBack, urlAPI }) => {
       setUsuario(data);
       localStorage.setItem("usuario", JSON.stringify(data));
     } catch (error) {
-      showToast(getErrorMessage(error, "Não foi possível atualizar seus dados."), "error");
+      showToast(
+        getErrorMessage(error, "Não foi possível atualizar seus dados."),
+        "error",
+      );
     } finally {
       setAtualizando(false);
     }
@@ -185,7 +80,9 @@ const PerfilPage = ({ onBack, urlAPI }) => {
       <div className={styles.perfilPage}>
         <h1>Meu Perfil</h1>
         <p>Você precisa estar logado para ver seu perfil.</p>
-        <button className={styles.btnBack} onClick={onBack}>Voltar</button>
+        <button className={styles.btnBack} onClick={onBack}>
+          Voltar
+        </button>
       </div>
     );
   }
@@ -201,7 +98,11 @@ const PerfilPage = ({ onBack, urlAPI }) => {
       <button className={styles.btnBack} onClick={onBack}>
         Voltar
       </button>
-      <button className={styles.btnAtualizar} onClick={atualizarDoServidor} disabled={atualizando}>
+      <button
+        className={styles.btnAtualizar}
+        onClick={atualizarDoServidor}
+        disabled={atualizando}
+      >
         {atualizando ? "Atualizando..." : "🔄 Atualizar do servidor"}
       </button>
       <div className={styles.gradeInfo}>
@@ -230,8 +131,9 @@ const PerfilPage = ({ onBack, urlAPI }) => {
         <TerminalSql urlAPI={urlAPI} usuarioId={String(usuario.id)} />
       ) : (
         <p className={styles.semAcesso}>
-          Você não tem acesso a área de DEV Vip. (Veja no README como um administrador pode
-          alterar seu cargo pra "DEV" direto no banco de dados.)
+          Você não tem acesso a área de DEV Vip. (Veja no README como um
+          administrador pode alterar seu cargo pra "DEV" direto no banco de
+          dados.)
         </p>
       )}
     </div>

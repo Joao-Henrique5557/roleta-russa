@@ -6,7 +6,6 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  min-height: 100vh;
   background-image:
     linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)),
     url("/images/fundo.png");
@@ -16,6 +15,7 @@
   background-attachment: scroll;
   color: var(--color-text-white);
   overflow-y: auto;
+  min-height: 100vh;
 }
 
 /* ---- HEADER ---- */
@@ -84,6 +84,22 @@
 .secondaryButton:hover {
   background-color: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* [CSS FIX] MultiplayerLobby.jsx importa este arquivo (game.module.css) e
+   usa styles.configSection para o campo "Seu nome", mas essa classe só
+   existia em ConfigPage/config.module.css - aqui ela não existia, então o
+   label/input ficavam sem layout nenhum (sem gap, sem espaçamento). */
+.configSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+}
+.configSection label {
+  font-size: var(--font-size-sm);
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: var(--font-weight-medium);
 }
 
 /* ---- GAME AREA ---- */

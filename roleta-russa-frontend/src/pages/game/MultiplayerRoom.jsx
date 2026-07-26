@@ -75,7 +75,14 @@ function gerarBalas(dificuldade) {
 }
 
 function ladoInicial() {
-  return { vidas: 3, maxVidas: 3, alive: true, itens: sortearItens(1), serraAtiva: false, pulaProximaVez: false };
+  return {
+    vidas: 3,
+    maxVidas: 3,
+    alive: true,
+    itens: sortearItens(1),
+    serraAtiva: false,
+    pulaProximaVez: false,
+  };
 }
 
 function estadoInicialMultiplayer(dificuldade) {
@@ -91,7 +98,9 @@ function estadoInicialMultiplayer(dificuldade) {
     posAtual: 0,
     quantVerdadeiras,
     balaRevelada: null,
-    log: [`🔫 Partida iniciada — ${balas.length} câmaras, ${quantVerdadeiras} bala(s) real(is).`],
+    log: [
+      `🔫 Partida iniciada — ${balas.length} câmaras, ${quantVerdadeiras} bala(s) real(is).`,
+    ],
   };
 }
 
@@ -106,8 +115,14 @@ function recarregarMultiplayer(estado) {
     quantVerdadeiras,
     balaRevelada: null,
     rodada: estado.rodada + 1,
-    jogador: { ...estado.jogador, itens: somarInventarios(estado.jogador.itens, ganhosJogador) },
-    bot: { ...estado.bot, itens: somarInventarios(estado.bot.itens, ganhosBot) },
+    jogador: {
+      ...estado.jogador,
+      itens: somarInventarios(estado.jogador.itens, ganhosJogador),
+    },
+    bot: {
+      ...estado.bot,
+      itens: somarInventarios(estado.bot.itens, ganhosBot),
+    },
     log: [
       ...estado.log,
       `🔁 Revólver recarregado — Rodada ${estado.rodada + 1}.`,
@@ -137,7 +152,8 @@ function atirarMultiplayer(estado, alvo) {
     }
     mudaVez = false;
   } else {
-    const alvoNome = estado.vezDe === "jogador" ? "no Visitante" : "no Anfitrião";
+    const alvoNome =
+      estado.vezDe === "jogador" ? "no Visitante" : "no Anfitrião";
     if (isVerdadeira) {
       const dano = atirador.serraAtiva ? 2 : 1;
       logEntry = `💥 ${nome(estado.vezDe)} atirou ${alvoNome} — bala REAL! -${dano} vida.${atirador.serraAtiva ? " (🪚 dano dobrado!)" : ""}`;
@@ -157,8 +173,17 @@ function atirarMultiplayer(estado, alvo) {
   if (novoJogador.vidas <= 0) novoJogador.alive = false;
   if (novoBot.vidas <= 0) novoBot.alive = false;
 
-  const candidato = mudaVez ? (estado.vezDe === "jogador" ? "bot" : "jogador") : estado.vezDe;
-  const { vezDe: vezDeFinal, jogador: j2, bot: b2, logExtra } = resolverPulosDeVez(
+  const candidato = mudaVez
+    ? estado.vezDe === "jogador"
+      ? "bot"
+      : "jogador"
+    : estado.vezDe;
+  const {
+    vezDe: vezDeFinal,
+    jogador: j2,
+    bot: b2,
+    logExtra,
+  } = resolverPulosDeVez(
     { jogador: novoJogador, bot: novoBot },
     estado.vezDe,
     candidato,
@@ -172,11 +197,14 @@ function atirarMultiplayer(estado, alvo) {
     bot: novoBot,
     posAtual: novoPos,
     balaRevelada: null,
-    log: logExtra ? [...estado.log, logEntry, logExtra] : [...estado.log, logEntry],
+    log: logExtra
+      ? [...estado.log, logEntry, logExtra]
+      : [...estado.log, logEntry],
     vezDe: vezDeFinal,
   };
 
-  if (!novoJogador.alive || !novoBot.alive) return { ...novoEstado, fase: "resultado" };
+  if (!novoJogador.alive || !novoBot.alive)
+    return { ...novoEstado, fase: "resultado" };
   if (novoPos >= balas.length) novoEstado = recarregarMultiplayer(novoEstado);
   return novoEstado;
 }
@@ -190,29 +218,61 @@ async function ganharPontosMultiplayer(urlAPI, showToast) {
   try {
     await axios.post(`${urlAPI}/GanharPontos`, dados, { timeout: 5000 });
   } catch (error) {
-    showToast(getErrorMessage(error, "Não foi possível salvar seus pontos."), "error");
+    showToast(
+      getErrorMessage(error, "Não foi possível salvar seus pontos."),
+      "error",
+    );
   }
 }
 
-export default function MultiplayerRoom({ onBack, onConfig, urlAPI, salaInicial }) {
+export default function MultiplayerRoom({
+  onBack,
+  onConfig,
+  urlAPI,
+  salaInicial,
+}) {
   const socket = getSocket();
   const { showToast } = useToast();
 
   const [sala, setSala] = useState(salaInicial); // { id, nome, jogadores, espectadores, hostSocketId, ultimoEstadoJogo }
   const [chat, setChat] = useState([]);
   const [mensagem, setMensagem] = useState("");
-  const [estadoJogo, setEstadoJogo] = useState(salaInicial?.ultimoEstadoJogo || null);
+  const [estadoJogo, setEstadoJogo] = useState(
+    salaInicial?.ultimoEstadoJogo || null,
+  );
   const [pontosEnviados, setPontosEnviados] = useState(false);
   const chatFimRef = useRef(null);
 
   const playTiro = useSoundEffect("/audio/efeitos_sonoros/tiro.mp3");
-  const playRecarga = useSoundEffect("/audio/efeitos_sonoros/arma_recarregando.mp3");
+  const playRecarga = useSoundEffect(
+    "/audio/efeitos_sonoros/arma_recarregando.mp3",
+  );
   const playBalaFalsa = useSoundEffect("/audio/efeitos_sonoros/tiro_falso.mp3");
 
   const souHost = socket.id === sala?.hostSocketId;
   const souJogador = sala?.jogadores?.some((p) => p.socketId === socket.id);
   const meuLado = souHost ? "jogador" : "bot"; // ver comentário no topo do arquivo
   const outroLado = souHost ? "bot" : "jogador";
+
+  // Copia o CÓDIGO da sala (sala.id, ex: "a3f9c1d2") pra área de
+  // transferência - é isso que precisa ser compartilhado pra alguém entrar
+  // numa sala PRIVADA, não o nome dela. Antes esse código nunca aparecia em
+  // lugar nenhum da tela, então quem criava uma sala privada não tinha como
+  // convidar ninguém (a pessoa tentava entrar digitando o NOME da sala, que
+  // o backend não reconhece - só o id gerado por randomUUID().slice(0,8)
+  // bate com o que "lobby:entrar" procura no Map de salas).
+  const copiarCodigoDaSala = useCallback(async () => {
+    if (!sala?.id) return;
+    try {
+      await navigator.clipboard.writeText(sala.id);
+      showToast("Código da sala copiado!", "success", 3000);
+    } catch {
+      // navigator.clipboard pode falhar (ex: página não-HTTPS em alguns
+      // navegadores) - ainda assim o código já está visível na tela pra
+      // copiar manualmente.
+      showToast(`Copie manualmente: ${sala.id}`, "info", 6000);
+    }
+  }, [sala, showToast]);
 
   // ---- Listeners de socket - montados uma única vez ----
   useEffect(() => {
@@ -227,7 +287,11 @@ export default function MultiplayerRoom({ onBack, onConfig, urlAPI, salaInicial 
       // host, então nunca chamo atirarMultiplayer() na minha própria
       // máquina - preciso reagir ao que chegou do servidor).
       setEstadoJogo((anterior) => {
-        if (anterior && novoEstado && novoEstado.log?.length > anterior.log?.length) {
+        if (
+          anterior &&
+          novoEstado &&
+          novoEstado.log?.length > anterior.log?.length
+        ) {
           const ultimaLinha = novoEstado.log[novoEstado.log.length - 1] || "";
           if (ultimaLinha.includes("🔁")) playRecarga();
           else if (ultimaLinha.includes("REAL")) playTiro();
@@ -240,11 +304,14 @@ export default function MultiplayerRoom({ onBack, onConfig, urlAPI, salaInicial 
     // isso, mas escutar dos dois lados não faria mal nenhum de qualquer forma).
     function aoReceberAcaoDoJogador({ acao, dados }) {
       setEstadoJogo((prev) => {
-        if (!prev || prev.fase !== "jogando" || prev.vezDe !== "bot") return prev;
+        if (!prev || prev.fase !== "jogando" || prev.vezDe !== "bot")
+          return prev;
         let novo = prev;
         if (acao === "item") {
           const r = aplicarUsoDeItem(prev, "bot", dados?.itemId);
-          novo = r.sucesso ? { ...r.estado, log: [...r.estado.log, r.mensagem] } : prev;
+          novo = r.sucesso
+            ? { ...r.estado, log: [...r.estado.log, r.mensagem] }
+            : prev;
         } else if (acao === "self" || acao === "opponent") {
           novo = atirarMultiplayer(prev, acao === "self" ? "self" : "opponent");
         }
@@ -273,7 +340,8 @@ export default function MultiplayerRoom({ onBack, onConfig, urlAPI, salaInicial 
 
   // Envia pontos quando EU (independente de ser host ou não) venço.
   useEffect(() => {
-    if (!estadoJogo || estadoJogo.fase !== "resultado" || pontosEnviados) return;
+    if (!estadoJogo || estadoJogo.fase !== "resultado" || pontosEnviados)
+      return;
     const meuEstado = estadoJogo[meuLado];
     const doOutro = estadoJogo[outroLado];
     if (meuEstado?.alive && !doOutro?.alive) {
@@ -312,7 +380,12 @@ export default function MultiplayerRoom({ onBack, onConfig, urlAPI, salaInicial 
   // Atirar: se eu sou host, calculo localmente; senão, só mando a intenção.
   const agir = useCallback(
     (alvo) => {
-      if (!estadoJogo || estadoJogo.fase !== "jogando" || estadoJogo.vezDe !== meuLado) return;
+      if (
+        !estadoJogo ||
+        estadoJogo.fase !== "jogando" ||
+        estadoJogo.vezDe !== meuLado
+      )
+        return;
       if (souHost) {
         const novo = atirarMultiplayer(estadoJogo, alvo);
         // O host toca o som direto (já sabe se a bala era real ou falsa
@@ -331,9 +404,18 @@ export default function MultiplayerRoom({ onBack, onConfig, urlAPI, salaInicial 
 
   const usarItem = useCallback(
     (itemId) => {
-      if (!estadoJogo || estadoJogo.fase !== "jogando" || estadoJogo.vezDe !== meuLado) return;
+      if (
+        !estadoJogo ||
+        estadoJogo.fase !== "jogando" ||
+        estadoJogo.vezDe !== meuLado
+      )
+        return;
       if (souHost) {
-        const { estado: novo, sucesso, mensagem: msg } = aplicarUsoDeItem(estadoJogo, "jogador", itemId);
+        const {
+          estado: novo,
+          sucesso,
+          mensagem: msg,
+        } = aplicarUsoDeItem(estadoJogo, "jogador", itemId);
         if (!sucesso) return showToast(msg, "info");
         const comLog = { ...novo, log: [...novo.log, msg] };
         setEstadoJogo(comLog);
@@ -348,7 +430,8 @@ export default function MultiplayerRoom({ onBack, onConfig, urlAPI, salaInicial 
   if (!sala) return null;
 
   const nomeDoLado = (lado) => (lado === "jogador" ? "Anfitrião" : "Visitante");
-  const podeAgir = estadoJogo?.fase === "jogando" && estadoJogo?.vezDe === meuLado;
+  const podeAgir =
+    estadoJogo?.fase === "jogando" && estadoJogo?.vezDe === meuLado;
   const meuEstadoJogo = estadoJogo?.[meuLado];
 
   return (
@@ -358,12 +441,32 @@ export default function MultiplayerRoom({ onBack, onConfig, urlAPI, salaInicial 
           <h1>{sala.nome}</h1>
           <p>
             {sala.privada ? "🔒 Sala privada" : "🌐 Sala pública"} ·{" "}
-            {sala.jogadores?.length || 0}/2 jogando · {sala.espectadores?.length || 0} assistindo
+            {sala.jogadores?.length || 0}/2 jogando ·{" "}
+            {sala.espectadores?.length || 0} assistindo
           </p>
+          {/* Código real que precisa ser compartilhado pra alguém entrar
+              (principalmente em sala privada, que não aparece na lista
+              pública do lobby - sem isso visível, ninguém consegue entrar). */}
+          <div className={multiplayerStyles.codigoSala}>
+            <span>
+              Código da sala: <strong>{sala.id}</strong>
+            </span>
+            <button
+              type="button"
+              onClick={copiarCodigoDaSala}
+              title="Copiar código"
+            >
+              📋 Copiar
+            </button>
+          </div>
         </div>
         <div className={styles.pageActions}>
-          <button className={styles.secondaryButton} onClick={onConfig}>⚙️</button>
-          <button className={styles.primaryButton} onClick={sair}>✕ Sair da sala</button>
+          <button className={styles.secondaryButton} onClick={onConfig}>
+            ⚙️
+          </button>
+          <button className={styles.primaryButton} onClick={sair}>
+            ✕ Sair da sala
+          </button>
         </div>
       </div>
 
@@ -371,28 +474,44 @@ export default function MultiplayerRoom({ onBack, onConfig, urlAPI, salaInicial 
         {/* ---- COLUNA DO JOGO ---- */}
         <div className={multiplayerStyles.gameColumn}>
           {!souJogador && (
-            <p className={multiplayerStyles.aviso}>👀 Você está assistindo esta partida como espectador.</p>
+            <p className={multiplayerStyles.aviso}>
+              👀 Você está assistindo esta partida como espectador.
+            </p>
           )}
 
           {!estadoJogo && (
             <div className={styles.setupArea}>
               {souHost ? (
                 <>
-                  <p className={styles.setupTitle}>Você é o anfitrião — escolha a dificuldade para começar</p>
+                  <p className={styles.setupTitle}>
+                    Você é o anfitrião — escolha a dificuldade para começar
+                  </p>
                   <div className={styles.difficultyCards}>
-                    <button className={`${styles.diffCard} ${styles.diffFacil}`} onClick={() => iniciarPartida("facil")}>
+                    <button
+                      className={`${styles.diffCard} ${styles.diffFacil}`}
+                      onClick={() => iniciarPartida("facil")}
+                    >
                       <span className={styles.diffLabel}>🟢 Fácil</span>
                     </button>
-                    <button className={`${styles.diffCard} ${styles.diffMedio}`} onClick={() => iniciarPartida("medio")}>
+                    <button
+                      className={`${styles.diffCard} ${styles.diffMedio}`}
+                      onClick={() => iniciarPartida("medio")}
+                    >
                       <span className={styles.diffLabel}>🟡 Médio</span>
                     </button>
-                    <button className={`${styles.diffCard} ${styles.diffDificil}`} onClick={() => iniciarPartida("dificil")}>
+                    <button
+                      className={`${styles.diffCard} ${styles.diffDificil}`}
+                      onClick={() => iniciarPartida("dificil")}
+                    >
                       <span className={styles.diffLabel}>🔴 Difícil</span>
                     </button>
                   </div>
                 </>
               ) : (
-                <p className={styles.setupTitle}>Aguardando o anfitrião escolher a dificuldade e iniciar a partida...</p>
+                <p className={styles.setupTitle}>
+                  Aguardando o anfitrião escolher a dificuldade e iniciar a
+                  partida...
+                </p>
               )}
             </div>
           )}
@@ -402,20 +521,32 @@ export default function MultiplayerRoom({ onBack, onConfig, urlAPI, salaInicial 
               <div className={styles.statusBar}>
                 <div className={styles.statusCard}>
                   <span>Anfitrião</span>
-                  <strong>{"❤️".repeat(estadoJogo.jogador.vidas)}{"🖤".repeat(Math.max(0, 3 - estadoJogo.jogador.vidas))}</strong>
+                  <strong>
+                    {"❤️".repeat(estadoJogo.jogador.vidas)}
+                    {"🖤".repeat(Math.max(0, 3 - estadoJogo.jogador.vidas))}
+                  </strong>
                 </div>
                 <div className={styles.statusCard}>
                   <span>Câmara</span>
-                  <strong>{estadoJogo.posAtual + 1}/{estadoJogo.balas.length}</strong>
+                  <strong>
+                    {estadoJogo.posAtual + 1}/{estadoJogo.balas.length}
+                  </strong>
                 </div>
                 <div className={styles.statusCard}>
                   <span>Visitante</span>
-                  <strong>{"❤️".repeat(estadoJogo.bot.vidas)}{"🖤".repeat(Math.max(0, 3 - estadoJogo.bot.vidas))}</strong>
+                  <strong>
+                    {"❤️".repeat(estadoJogo.bot.vidas)}
+                    {"🖤".repeat(Math.max(0, 3 - estadoJogo.bot.vidas))}
+                  </strong>
                 </div>
               </div>
 
               <div className={styles.turnInfo}>
-                <h2>{estadoJogo.vezDe === meuLado ? "🎯 Sua vez" : `⏳ Vez de ${nomeDoLado(estadoJogo.vezDe)}`}</h2>
+                <h2>
+                  {estadoJogo.vezDe === meuLado
+                    ? "🎯 Sua vez"
+                    : `⏳ Vez de ${nomeDoLado(estadoJogo.vezDe)}`}
+                </h2>
               </div>
 
               {souJogador && (
@@ -441,15 +572,24 @@ export default function MultiplayerRoom({ onBack, onConfig, urlAPI, salaInicial 
                   </div>
                   {estadoJogo.balaRevelada !== null && (
                     <p className={styles.lupaAviso}>
-                      🔍 A bala na câmara atual é {estadoJogo.balaRevelada ? "REAL 🔴" : "FALSA ⚪"}.
+                      🔍 A bala na câmara atual é{" "}
+                      {estadoJogo.balaRevelada ? "REAL 🔴" : "FALSA ⚪"}.
                     </p>
                   )}
                   <div className={styles.actions}>
-                    <button className={`${styles.actionBtn} ${styles.actionSelf}`} disabled={!podeAgir} onClick={() => agir("self")}>
+                    <button
+                      className={`${styles.actionBtn} ${styles.actionSelf}`}
+                      disabled={!podeAgir}
+                      onClick={() => agir("self")}
+                    >
                       <span className={styles.actionIcon}>🎰</span>
                       <span>Atirar em mim</span>
                     </button>
-                    <button className={`${styles.actionBtn} ${styles.actionOpponent}`} disabled={!podeAgir} onClick={() => agir("opponent")}>
+                    <button
+                      className={`${styles.actionBtn} ${styles.actionOpponent}`}
+                      disabled={!podeAgir}
+                      onClick={() => agir("opponent")}
+                    >
                       <span className={styles.actionIcon}>💀</span>
                       <span>Atirar no oponente</span>
                     </button>
@@ -458,9 +598,14 @@ export default function MultiplayerRoom({ onBack, onConfig, urlAPI, salaInicial 
               )}
 
               <div className={styles.log}>
-                {[...estadoJogo.log].reverse().slice(0, 12).map((entry, i) => (
-                  <p key={i} className={styles.logEntry}>{entry}</p>
-                ))}
+                {[...estadoJogo.log]
+                  .reverse()
+                  .slice(0, 12)
+                  .map((entry, i) => (
+                    <p key={i} className={styles.logEntry}>
+                      {entry}
+                    </p>
+                  ))}
               </div>
             </div>
           )}
@@ -468,10 +613,15 @@ export default function MultiplayerRoom({ onBack, onConfig, urlAPI, salaInicial 
           {estadoJogo && estadoJogo.fase === "resultado" && (
             <div className={styles.resultCard}>
               <p className={styles.resultTitle}>
-                {estadoJogo[meuLado]?.alive ? "🏆 Você venceu!" : "💀 Você perdeu!"}
+                {estadoJogo[meuLado]?.alive
+                  ? "🏆 Você venceu!"
+                  : "💀 Você perdeu!"}
               </p>
               {souHost && (
-                <button className={styles.primaryButton} onClick={() => setEstadoJogo(null)}>
+                <button
+                  className={styles.primaryButton}
+                  onClick={() => setEstadoJogo(null)}
+                >
                   Jogar de novo
                 </button>
               )}

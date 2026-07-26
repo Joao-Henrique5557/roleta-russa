@@ -1,0 +1,273 @@
+/* =============================================================
+   TERMINAL SQL — visual "hacker CRT" (matrix green)
+   ============================================================= */
+
+/* Paleta e efeito de scanline isolados aqui, dentro do módulo, pra não
+   vazar pro resto da página nem depender de variáveis globais (o verde
+   neon não combina com o resto do design system azul/roxo do app). */
+.areaDEV {
+  --term-green: #00ff41;
+  --term-green-dim: rgba(0, 255, 65, 0.65);
+  --term-bg: rgba(3, 10, 5, 0.94);
+
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background-color: var(--term-bg);
+  border: 1px solid rgba(0, 255, 65, 0.4);
+  border-radius: 8px;
+  box-shadow:
+    0 0 24px rgba(0, 255, 65, 0.12),
+    inset 0 0 40px rgba(0, 255, 65, 0.04);
+  margin: 20px 0;
+  padding: 16px 20px 20px;
+  color: var(--term-green);
+  font-family: "Courier New", Courier, monospace;
+}
+
+/* Linhas de CRT sobre todo o painel - mesmo truque da wallpaper de
+   referência: um gradiente repetido bem sutil, sem interferir na leitura
+   do texto. */
+.areaDEV::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%);
+  background-size: 100% 4px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Todo o conteúdo real fica acima do overlay de scanlines. */
+.areaDEV > * {
+  position: relative;
+  z-index: 2;
+}
+
+.terminalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(0, 255, 65, 0.35);
+  padding-bottom: 8px;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  opacity: 0.9;
+}
+.terminalHeaderTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.terminalHeaderDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--term-green);
+  box-shadow: 0 0 6px var(--term-green);
+  animation: termPulse 1.4s ease-in-out infinite;
+}
+.terminalClock {
+  font-variant-numeric: tabular-nums;
+  color: var(--term-green-dim);
+}
+
+@keyframes termPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.terminalAviso {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--term-green-dim);
+  margin: 0;
+}
+.terminalAviso code {
+  color: var(--term-green);
+  background: rgba(0, 255, 65, 0.08);
+  padding: 0 4px;
+  border-radius: 3px;
+}
+
+.terminalPromptLine {
+  margin-top: 4px;
+}
+.terminalPrompt {
+  color: var(--term-green);
+  font-weight: bold;
+  text-shadow: 0 0 6px rgba(0, 255, 65, 0.5);
+}
+
+.terminalSQL {
+  width: 100%;
+  min-height: 110px;
+  background-color: rgba(0, 0, 0, 0.55);
+  color: var(--term-green);
+  caret-color: var(--term-green);
+  border: 1px solid rgba(0, 255, 65, 0.3);
+  border-radius: 5px;
+  padding: 10px;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 14px;
+  resize: vertical;
+  outline: none;
+  box-shadow: inset 0 0 12px rgba(0, 255, 65, 0.08);
+}
+.terminalSQL::placeholder {
+  color: rgba(0, 255, 65, 0.35);
+}
+.terminalSQL:focus {
+  border-color: var(--term-green);
+  box-shadow:
+    inset 0 0 12px rgba(0, 255, 65, 0.15),
+    0 0 10px rgba(0, 255, 65, 0.25);
+}
+
+.terminalBotoes {
+  display: flex;
+  justify-content: flex-end;
+}
+.btnExecutar {
+  background: rgba(0, 255, 65, 0.08);
+  color: var(--term-green);
+  border: 1px solid var(--term-green);
+  border-radius: 5px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-weight: bold;
+  font-family: inherit;
+  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s ease-out;
+}
+.btnExecutar:hover:not(:disabled) {
+  background: rgba(0, 255, 65, 0.18);
+  box-shadow: 0 0 12px rgba(0, 255, 65, 0.4);
+}
+.btnExecutar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.terminalHint {
+  font-size: 11px;
+  font-weight: normal;
+  opacity: 0.65;
+}
+
+.terminalErro {
+  color: #ff5f5f;
+  background: rgba(255, 60, 60, 0.08);
+  border: 1px solid rgba(255, 60, 60, 0.4);
+  border-radius: 5px;
+  padding: 8px 12px;
+  margin: 0;
+  font-size: 13px;
+}
+
+.terminalMeta {
+  font-size: 12px;
+  color: var(--term-green-dim);
+  margin: 0;
+}
+
+.terminalResultado {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.terminalTabelaWrapper {
+  max-height: 320px;
+  overflow: auto;
+  border: 1px solid rgba(0, 255, 65, 0.25);
+  border-radius: 5px;
+}
+.terminalTabelaWrapper::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.terminalTabelaWrapper::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 65, 0.3);
+  border-radius: 4px;
+}
+.terminalTabela {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+  font-family: "Courier New", Courier, monospace;
+  color: var(--term-green);
+}
+.terminalTabela th,
+.terminalTabela td {
+  border-bottom: 1px solid rgba(0, 255, 65, 0.15);
+  padding: 6px 10px;
+  text-align: left;
+  white-space: nowrap;
+}
+.terminalTabela th {
+  background: rgba(0, 255, 65, 0.08);
+  color: var(--term-green);
+  position: sticky;
+  top: 0;
+}
+.terminalTabela tbody tr:hover {
+  background: rgba(0, 255, 65, 0.05);
+}
+
+.terminalHistorico {
+  font-size: 12px;
+}
+.terminalHistorico p {
+  margin: 0 0 4px 0;
+  color: var(--term-green-dim);
+}
+.terminalHistorico ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.terminalHistorico button {
+  background: rgba(0, 255, 65, 0.05);
+  border: 1px solid rgba(0, 255, 65, 0.2);
+  color: var(--term-green-dim);
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-family: "Courier New", Courier, monospace;
+  text-align: left;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: all 0.15s ease-out;
+}
+.terminalHistorico button:hover {
+  background: rgba(0, 255, 65, 0.12);
+  color: var(--term-green);
+  border-color: var(--term-green);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .areaDEV {
+    padding: 12px 14px 16px;
+  }
+  .terminalHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}

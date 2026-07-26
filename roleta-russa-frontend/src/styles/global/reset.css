@@ -6,7 +6,9 @@
   box-sizing: border-box;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   margin: 0;
   padding: 0;
   font-family: var(--font-family);
@@ -17,6 +19,11 @@ html, body, #root {
   height: 100%;
   width: 100%;
   color: var(--color-text-primary);
+  overflow-y: auto;
+}
+
+#root {
+  min-height: 100vh;
 }
 
 body {
@@ -38,9 +45,24 @@ input[type="range"] {
   appearance: none;
   width: 100%;
   height: 8px;
-  background: #d3d3d3; /* Cor do trilho padrão */
+  background: var(--color-border-light);
   outline: none;
   border-radius: 4px;
+  accent-color: var(--color-primary);
+}
+
+/* [CSS FIX] appearance:none remove o thumb nativo; sem um estilo próprio
+   o controle ficava invisível/sem forma no Chrome/Safari em qualquer
+   slider que não sobrescrevesse isso por completo (só o music-player
+   fazia isso). accent-color acima já cobre navegadores modernos, e este
+   fallback cobre quem só respeita o ::-webkit-slider-thumb. */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  cursor: pointer;
 }
 
 a {
@@ -60,8 +82,9 @@ a:visited {
 
 /* Responsive */
 @media (max-width: 768px) {
-  html, body, #root {
+  html,
+  body,
+  #root {
     height: auto;
-    min-height: 100vh;
   }
 }
