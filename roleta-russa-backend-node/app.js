@@ -59,7 +59,6 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/", statusRouter); // GET /Status
 app.use("/", usuariosRouter); // /CadastrarServlet, /AutenticarServlet, /ListarUsuarios, /BuscarUsuario, /GanharPontos
 app.use("/", novidadesRouter); // /ListarNovidades, /CadastrarNovidade
-app.use("/", devRouter); // /DevSql (terminal do Perfil > Área DEV)
 
 app.use("/", indexRouter); // rota "/" original do scaffold (só uma página informativa)
 
