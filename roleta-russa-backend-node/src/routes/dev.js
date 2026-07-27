@@ -23,82 +23,82 @@
 // REMOVIDA (ou, no mínimo, escondida atrás de autenticação forte + rede
 // interna).
 // ==================================================================
-"use strict";
+// "use strict";
 
-const express = require("express");
-const router = express.Router();
-const { pool } = require("../db");
-const validation = require("../utils/validation");
+// const express = require("express");
+// const router = express.Router();
+// const { pool } = require("../db");
+// const validation = require("../utils/validation");
 
-function erro(res, status, texto) {
-  res.status(status).json({ error: texto });
-}
+// function erro(res, status, texto) {
+//   res.status(status).json({ error: texto });
+// }
 
 /**
  * Confirma no banco (não confia no que o front manda) que o usuário
  * informado realmente tem cargo = 'DEV'.
  */
-async function usuarioEhDev(usuarioId) {
-  if (validation.isBlank(usuarioId)) return false;
-  const [linhas] = await pool.query("SELECT cargo FROM usuarios WHERE id = ?", [usuarioId]);
-  if (linhas.length === 0) return false;
-  return linhas[0].cargo === "DEV";
-}
+// async function usuarioEhDev(usuarioId) {
+//   if (validation.isBlank(usuarioId)) return false;
+//   const [linhas] = await pool.query("SELECT cargo FROM usuarios WHERE id = ?", [usuarioId]);
+//   if (linhas.length === 0) return false;
+//   return linhas[0].cargo === "DEV";
+// }
 
 // POST /DevSql  body: { usuarioId, sql }
-router.post("/DevSql", async (req, res) => {
-  const { usuarioId, sql } = req.body;
+// router.post("/DevSql", async (req, res) => {
+//   const { usuarioId, sql } = req.body;
 
-  if (validation.isBlank(usuarioId) || validation.isBlank(sql)) {
-    return erro(res, 400, "Parâmetros 'usuarioId' e 'sql' são obrigatórios.");
-  }
+//   if (validation.isBlank(usuarioId) || validation.isBlank(sql)) {
+//     return erro(res, 400, "Parâmetros 'usuarioId' e 'sql' são obrigatórios.");
+//   }
 
-  try {
-    const ehDev = await usuarioEhDev(usuarioId);
-    if (!ehDev) {
-      // 403 = "eu entendi quem você é, mas você não tem permissão".
-      return erro(res, 403, "Acesso negado: apenas usuários com cargo DEV podem usar o terminal SQL.");
-    }
-  } catch (e) {
-    console.error("[DevSql] Falha ao validar cargo do usuário:", e);
-    return erro(res, 500, "Erro ao validar permissões.");
-  }
+//   try {
+//     const ehDev = await usuarioEhDev(usuarioId);
+//     if (!ehDev) {
+//       // 403 = "eu entendi quem você é, mas você não tem permissão".
+//       return erro(res, 403, "Acesso negado: apenas usuários com cargo DEV podem usar o terminal SQL.");
+//     }
+//   } catch (e) {
+//     console.error("[DevSql] Falha ao validar cargo do usuário:", e);
+//     return erro(res, 500, "Erro ao validar permissões.");
+//   }
 
   // Bloqueia múltiplos statements separados por ";" - reduz (mas não
   // elimina) o risco de alguém colar um script inteiro sem querer/querendo.
-  const comandos = sql.split(";").map((c) => c.trim()).filter(Boolean);
-  if (comandos.length > 1) {
-    return erro(res, 400, "Execute um comando SQL por vez (sem ';' entre comandos).");
-  }
+  // const comandos = sql.split(";").map((c) => c.trim()).filter(Boolean);
+  // if (comandos.length > 1) {
+  //   return erro(res, 400, "Execute um comando SQL por vez (sem ';' entre comandos).");
+  // }
 
-  const inicio = Date.now();
-  try {
-    // pool.query() do mysql2 já cobre SELECT, INSERT, UPDATE, DELETE, DDL...
-    const [resultado, campos] = await pool.query(sql);
-    const duracaoMs = Date.now() - inicio;
+  // const inicio = Date.now();
+  // try {
+  //   // pool.query() do mysql2 já cobre SELECT, INSERT, UPDATE, DELETE, DDL...
+  //   const [resultado, campos] = await pool.query(sql);
+  //   const duracaoMs = Date.now() - inicio;
 
-    if (Array.isArray(resultado)) {
-      // SELECT: `resultado` é um array de linhas.
-      return res.status(200).json({
-        tipo: "select",
-        colunas: campos ? campos.map((c) => c.name) : Object.keys(resultado[0] || {}),
-        linhas: resultado,
-        totalLinhas: resultado.length,
-        duracaoMs,
-      });
-    }
+  //   if (Array.isArray(resultado)) {
+  //     // SELECT: `resultado` é um array de linhas.
+  //     return res.status(200).json({
+  //       tipo: "select",
+  //       colunas: campos ? campos.map((c) => c.name) : Object.keys(resultado[0] || {}),
+  //       linhas: resultado,
+  //       totalLinhas: resultado.length,
+  //       duracaoMs,
+  //     });
+  //   }
 
     // INSERT/UPDATE/DELETE/DDL: `resultado` é um ResultSetHeader.
-    return res.status(200).json({
-      tipo: "escrita",
-      linhasAfetadas: resultado.affectedRows ?? 0,
-      insertId: resultado.insertId ?? null,
-      duracaoMs,
-    });
-  } catch (e) {
-    console.error("[DevSql] Erro ao executar SQL:", e.message);
-    return erro(res, 400, `Erro ao executar SQL: ${e.message}`);
-  }
-});
+//     return res.status(200).json({
+//       tipo: "escrita",
+//       linhasAfetadas: resultado.affectedRows ?? 0,
+//       insertId: resultado.insertId ?? null,
+//       duracaoMs,
+//     });
+//   } catch (e) {
+//     console.error("[DevSql] Erro ao executar SQL:", e.message);
+//     return erro(res, 400, `Erro ao executar SQL: ${e.message}`);
+//   }
+// });
 
-module.exports = router;
+// module.exports = router;

@@ -15,6 +15,12 @@ const DB_NAME = process.env.DB_NAME || "roleta_russa";
 const DB_USER = process.env.DB_USER || "root";
 const DB_PASSWORD = process.env.DB_PASSWORD || "";
 
+// Em produção (Aiven exige TLS), o driver precisa negociar SSL.
+// Rodando local via Docker Compose (sem TLS configurado no MySQL do
+// container), isso continua funcionando normalmente: `ssl: undefined`
+// equivale a não usar SSL, então só ativamos quando DB_SSL=true.
+const DB_SSL = process.env.DB_SSL !== "false"; // default: ligado
+
 const pool = mysql.createPool({
   host: DB_HOST,
   port: DB_PORT,
@@ -25,6 +31,7 @@ const pool = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0,
   dateStrings: true,
+  ssl: DB_SSL ? { rejectUnauthorized: true } : undefined,
 });
 
 /**
