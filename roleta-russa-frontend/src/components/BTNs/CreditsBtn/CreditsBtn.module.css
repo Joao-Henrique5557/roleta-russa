@@ -1,0 +1,32 @@
+.creditsBtn {
+  position: fixed;
+  top: 32px;
+  left: 96px;
+  z-index: var(--z-sticky);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  color: var(--color-text-white);
+  transition: transform var(--transition-fast);
+}
+.creditsBtn:hover {
+  transform: scale(1.05);
+}
+.creditsBtn span.material-symbols-outlined {
+  font-size: 26px;
+}
+.label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+@media (max-width: 768px) {
+  .creditsBtn {
+    top: 16px;
+    left: 56px;
+  }
+  .label {
+    display: none;
+  }
+}

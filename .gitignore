@@ -16,3 +16,5 @@ Thumbs.db
 # - roleta-russa-frontend/.gitignore (node_modules/, dist/)
 
 .github
+
+*.zip

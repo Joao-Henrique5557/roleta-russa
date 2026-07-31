@@ -41,8 +41,12 @@ public class CadastrarNovidade extends HttpServlet {
 		novidade.setVersao(versao != null && !versao.trim().isEmpty() ? versao : "1.0.0");
 		novidade.setDataPublicacao(LocalDateTime.now());
 
-		// Se o parâmetro 'ativo' não for enviado, assume 'true' por padrão
-		boolean ativo = ativoParam == null || Boolean.parseBoolean(ativoParam);
+		// [BUG FIX] Antes só tratava ativoParam == null como "não enviado".
+		// Quando o campo do formulário vinha vazio ("", sem ser null),
+		// Boolean.parseBoolean("") retornava false e a novidade era
+		// criada como inativa por engano. Agora isBlank() cobre null E
+		// string vazia/só espaços, mantendo o padrão 'true' documentado.
+		boolean ativo = ValidationUtil.isBlank(ativoParam) || Boolean.parseBoolean(ativoParam);
 		novidade.setAtivo(ativo);
 
 		NovidadeDAO dao = new NovidadeDAO();

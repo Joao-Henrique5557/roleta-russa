@@ -1,11 +1,4 @@
 // src/App.jsx
-//
-// Componente raiz. Não usamos nenhuma biblioteca de rotas (tipo React
-// Router) de propósito - a navegação inteira é feita trocando uma única
-// variável de estado (`view`) e renderizando condicionalmente a página
-// correspondente. Pra um projeto de estudo isso é mais simples de
-// entender que configurar rotas "de verdade", ao custo de não ter URLs
-// diferentes por tela (ex: sempre fica em "/", nunca em "/perfil").
 import { useState } from "react";
 
 import Home from "./pages/Home/Home";
@@ -18,9 +11,11 @@ import ConfigPage from "./pages/ConfigPage/ConfigPage";
 import PerfilPage from "./pages/PerfilPage/PerfilPage";
 import EstudosPage from "./pages/EstudosPage/EstudosPage";
 import ErrorBoundary from "./components/Feedback/ErrorBoundary/ErrorBoundary";
-import { ToastProvider } from "./context/ToastContext";
+import IntroVideo from "./components/especiais/IntroVideo/IntroVideo";
+import { ToastProvider, useToast } from "./context/ToastContext";
 import { MusicPlayerProvider } from "./context/MusicPlayerContext";
 import { desconectarSocket } from "./services/socket";
+import { isDesktopDevice } from "./utils/device";
 
 // Fica dentro do ToastProvider pra poder usar o hook useToast.
 function AppContent() {
@@ -29,10 +24,13 @@ function AppContent() {
   const [urlAPI] = useState(
     import.meta.env.VITE_API_URL || "http://localhost:8080",
   );
-  // Guarda a sala de multiplayer atual (id, nome, jogadores...) e o nome
-  // escolhido pela pessoa, pra passar pra MultiplayerRoom quando ela entra.
   const [salaAtual, setSalaAtual] = useState(null);
   const [nomeNaSala, setNomeNaSala] = useState("");
+  // Controla a intro como OVERLAY, não como troca de "view". Assim a Home
+  // (e o Ranking/Novidades dentro dela) continuam montados por baixo do
+  // vídeo, sem refazer as chamadas à API toda vez que a intro abre/fecha.
+  const [introAberta, setIntroAberta] = useState(false);
+  const { showToast } = useToast();
 
   const openConfig = (nextView) => {
     setReturnView(nextView ?? view);
@@ -57,16 +55,22 @@ function AppContent() {
     }
   };
 
-  // Chamado pela MultiplayerLobby quando a pessoa cria/entra numa sala.
+  // Botão "Créditos" na Home. Só abre o overlay - não navega pra lugar
+  // nenhum, então a Home embaixo nunca desmonta.
+  const onCredits = () => {
+    if (!isDesktopDevice()) {
+      showToast("Os créditos em vídeo estão disponíveis apenas no PC.", "info");
+      return;
+    }
+    setIntroAberta(true);
+  };
+
   const entrarNaSala = (sala, nome) => {
     setSalaAtual(sala);
     setNomeNaSala(nome);
     navigateTo("multiplayer-room");
   };
 
-  // Sair da sala de multiplayer: fecha a conexão WebSocket (não faz
-  // sentido manter ela aberta enquanto a pessoa está, por exemplo, no
-  // singleplayer) e volta pra Home.
   const sairDoMultiplayer = () => {
     desconectarSocket();
     setSalaAtual(null);
@@ -100,6 +104,7 @@ function AppContent() {
           onLogout={() => onLogout()}
           urlAPI={urlAPI}
           onPerfil={onPerfil}
+          onCredits={onCredits}
         />
       )}
       {view === "singleplayer" && (
@@ -131,15 +136,20 @@ function AppContent() {
       {view === "perfil" && (
         <PerfilPage onBack={() => navigateTo("home")} urlAPI={urlAPI} />
       )}
-      {view === "estudos" && (
-        <EstudosPage onBack={() => navigateTo("home")} />
+      {view === "estudos" && <EstudosPage onBack={() => navigateTo("home")} />}
+
+      {/* Overlay independente da "view" atual - fica por cima sem desmontar
+          o que está embaixo (evita refazer fetch de Ranking/Novidades). */}
+      {introAberta && (
+        <IntroVideo
+          src="/video/Intro/intro.mp4"
+          onFinish={() => setIntroAberta(false)}
+        />
       )}
     </div>
   );
 }
 
-// Componente raiz: fornece o ErrorBoundary (captura erros de renderização)
-// e o ToastProvider (notificações globais) pro resto da aplicação.
 function App() {
   return (
     <ErrorBoundary>

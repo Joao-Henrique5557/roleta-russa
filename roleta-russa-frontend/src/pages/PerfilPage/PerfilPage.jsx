@@ -92,7 +92,7 @@ const PerfilPage = ({ onBack, urlAPI }) => {
       <h1>Meu Perfil</h1>
       <img
         className={styles.fotoUser}
-        src="/images/fotoUser.png"
+        src="/imagens/padrao/fotoPadrao.jpg"
         alt="Foto do Usuário"
       />
       <button className={styles.btnBack} onClick={onBack}>

@@ -8,7 +8,7 @@ function AutenticationLogin({ onConfig, onSignup, onHome, urlAPI}) {
     <div className={styles.loginContainer}>
       <ConfigBtn onConfig={onConfig} />
 
-      <p>Caso já tivesse uma conta, talvez ela pode ter sido deletada para fins de aprimoramento do banco de dados.</p>
+      <p>Caso a mensagem de recarregar a pagina apareça, recarregue a pagina até o servidor acordar!</p>
       
       <Formulario tipo="login" onSwitch={onSignup} onSubmit={onHome} urlAPI={urlAPI} />
     </div>

@@ -1,0 +1,123 @@
+.introOverlay {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  animation: fadeIn 0.3s ease-out;
+}
+
+.introVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+
+.introControls {
+  position: absolute;
+  bottom: var(--spacing-xl);
+  right: var(--spacing-xl);
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.controlBtn {
+  background: rgba(0, 0, 0, 0.6);
+  color: var(--color-text-white);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-size: var(--font-size-sm);
+  font-family: var(--font-family);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  backdrop-filter: blur(4px);
+}
+.controlBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* ---- CRÉDITOS ---- */
+.creditsContainer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 10%;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  padding: 0 var(--spacing-xl);
+}
+
+.creditsBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  text-align: center;
+  animation: creditsFade 3.5s ease-in-out forwards;
+}
+
+.creditsTitulo {
+  margin: 0 0 var(--spacing-xs) 0;
+  font-size: var(--font-size-sm);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--color-secondary-light);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+.creditsLinha {
+  margin: 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-white);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+/* Aparece suave, fica visível, e desaparece antes do bloco seguinte entrar.
+   A duração aqui (3.5s) é só o "molde" da curva de opacidade - o tempo real
+   que cada bloco fica na tela é controlado pelo duracaoMs em creditos.js.
+   Se você mudar duracaoMs pra algo bem menor que ~1.6s, vale reduzir esse
+   valor também pra a curva não ficar cortada. */
+@keyframes creditsFade {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  12% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  78% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Responsivo (embora a intro só rode em desktop, útil se testar em janela estreita) */
+@media (max-width: 768px) {
+  .creditsLinha {
+    font-size: var(--font-size-lg);
+  }
+  .creditsContainer {
+    bottom: 10%;
+  }
+}

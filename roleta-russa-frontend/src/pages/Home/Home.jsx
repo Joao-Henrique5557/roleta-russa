@@ -6,19 +6,29 @@ import Footer from "../../components/show-to-public/Footer/Footer";
 import ScrollIndicator from "../../components/ScrollIndicador/ScrollIndicator";
 import PropTypes from "prop-types";
 import ConfigBtn from "../../components/BTNs/ConfigBtn/ConfigBtn";
+import CreditsBtn from "../../components/BTNs/CreditsBtn/CreditsBtn";
 
 Home.propTypes = {
   onConfig: PropTypes.func.isRequired,
   onSingleplayer: PropTypes.func.isRequired,
   onMultiplayer: PropTypes.func.isRequired,
-  onEstudos: PropTypes.func,
   onLogout: PropTypes.func.isRequired,
+  onCredits: PropTypes.func.isRequired,
 };
 
-function Home({ onConfig, onSingleplayer, onMultiplayer, onEstudos, onLogout, urlAPI, onPerfil }) {
+function Home({
+  onConfig,
+  onSingleplayer,
+  onMultiplayer,
+  onLogout,
+  urlAPI,
+  onPerfil,
+  onCredits,
+}) {
   return (
     <div className={styles.home}>
       <ConfigBtn onConfig={onConfig} />
+      <CreditsBtn onCredits={onCredits} />
       <span
         className={`${styles.logoutBtn} material-symbols-outlined`}
         onClick={onLogout}
@@ -30,7 +40,6 @@ function Home({ onConfig, onSingleplayer, onMultiplayer, onEstudos, onLogout, ur
           onSingleplayer={onSingleplayer}
           onMultiplayer={onMultiplayer}
           onPerfil={onPerfil}
-          onEstudos={onEstudos}
         />
         <Ranking urlAPI={urlAPI}/>
         <Novidades urlAPI={urlAPI}/>

@@ -5,6 +5,7 @@
   flex-direction: column;
   gap: var(--spacing-lg);
 }
+
 @media (max-width: 1200px) {
   .menuLateral {
     flex: 0 1 200px;
