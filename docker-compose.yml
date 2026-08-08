@@ -30,6 +30,7 @@ services:
     volumes:
       - db_data:/var/lib/mysql
       - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./db/migration_002_feedbacks.sql:/docker-entrypoint-initdb.d/02-migration_feedbacks.sql:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${DB_PASSWORD:-NovaSenhaForte123!}"]
       interval: 5s
@@ -51,6 +52,10 @@ services:
       DB_URL: jdbc:mysql://db:3306/roleta_russa?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       DB_USER: root
       DB_PASSWORD: ${DB_PASSWORD:-NovaSenhaForte123!}
+      # Terminal SQL (Área de DEV Vip) - ok deixar ligado aqui porque isso
+      # afeta só o ambiente local do Docker Compose, nunca a implantação em
+      # produção (Render), que não lê este arquivo.
+      ENABLE_DEV_SQL: "true"
     depends_on:
       db:
         condition: service_healthy

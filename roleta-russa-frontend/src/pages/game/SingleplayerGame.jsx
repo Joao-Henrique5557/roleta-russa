@@ -254,7 +254,7 @@ async function ganharPontos(urlAPI, showToast) {
   } catch (error) {
     // [MELHORIA] Antes o erro só ia pro console.error e o jogador nunca
     // ficava sabendo que os pontos não foram salvos. Agora usa o mesmo
-    // padrão de toast + getErrorMessage já usado em Formulario/Ranking/Novidades.
+    // padrão de toast + getErrorMessage já usado em Formulario/Ranking/Feedbacks.
     const mensagem = getErrorMessage(
       error,
       "Não foi possível salvar seus pontos.",

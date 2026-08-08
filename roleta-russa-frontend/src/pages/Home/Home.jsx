@@ -1,19 +1,18 @@
 import styles from "./home.module.css";
 import MenuLateral from "../../components/MenuLateral/MenuLateral";
 import Ranking from "../../components/show-to-public/Ranking/Ranking";
-import Novidades from "../../components/show-to-public/Novidades/Novidades";
+import Feedbacks from "../../components/show-to-public/Feedbacks/Feedbacks";
 import Footer from "../../components/show-to-public/Footer/Footer";
 import ScrollIndicator from "../../components/ScrollIndicador/ScrollIndicator";
 import PropTypes from "prop-types";
 import ConfigBtn from "../../components/BTNs/ConfigBtn/ConfigBtn";
-import CreditsBtn from "../../components/BTNs/CreditsBtn/CreditsBtn";
 
 Home.propTypes = {
   onConfig: PropTypes.func.isRequired,
   onSingleplayer: PropTypes.func.isRequired,
   onMultiplayer: PropTypes.func.isRequired,
   onLogout: PropTypes.func.isRequired,
-  onCredits: PropTypes.func.isRequired,
+  onEstudos: PropTypes.func,
 };
 
 function Home({
@@ -23,12 +22,11 @@ function Home({
   onLogout,
   urlAPI,
   onPerfil,
-  onCredits,
+  onEstudos,
 }) {
   return (
     <div className={styles.home}>
       <ConfigBtn onConfig={onConfig} />
-      <CreditsBtn onCredits={onCredits} />
       <span
         className={`${styles.logoutBtn} material-symbols-outlined`}
         onClick={onLogout}
@@ -40,9 +38,10 @@ function Home({
           onSingleplayer={onSingleplayer}
           onMultiplayer={onMultiplayer}
           onPerfil={onPerfil}
+          onEstudos={onEstudos}
         />
         <Ranking urlAPI={urlAPI}/>
-        <Novidades urlAPI={urlAPI}/>
+        <Feedbacks urlAPI={urlAPI}/>
         <ScrollIndicator />
       </div>
       <Footer />

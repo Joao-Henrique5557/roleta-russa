@@ -82,8 +82,8 @@ Compose, Node no container, CORS).
 | GET    | `/ListarUsuarios`    | Ranking (top 10)                                      |
 | GET    | `/BuscarUsuario?id=` | Dados atuais de um usuário                            |
 | POST   | `/GanharPontos`      | Somar pontos a um usuário                             |
-| GET    | `/ListarNovidades`   | Listar novidades ativas                               |
-| POST   | `/CadastrarNovidade` | Criar novidade                                        |
+| GET    | `/ListarFeedbacks`   | Listar comentários/sugestões/denúncias                |
+| POST   | `/CriarFeedback`     | Enviar comentário/sugestão/denúncia                   |
 | POST   | `/DevSql`            | Terminal SQL da Área DEV do Perfil (ver seção abaixo) |
 
 O front-end fala com o backend Java via `VITE_API_URL` e com o servidor de

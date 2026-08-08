@@ -53,9 +53,10 @@ input[type="range"] {
 
 /* [CSS FIX] appearance:none remove o thumb nativo; sem um estilo próprio
    o controle ficava invisível/sem forma no Chrome/Safari em qualquer
-   slider que não sobrescrevesse isso por completo (só o music-player
-   fazia isso). accent-color acima já cobre navegadores modernos, e este
-   fallback cobre quem só respeita o ::-webkit-slider-thumb. */
+   slider que não sobrescrevesse isso por completo. accent-color acima já
+   cobre navegadores modernos, e este fallback cobre quem só respeita o
+   ::-webkit-slider-thumb. Mantido como base genérica para qualquer input
+   range futuro, mesmo sem nenhum em uso agora. */
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 14px;

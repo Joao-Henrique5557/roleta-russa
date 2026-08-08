@@ -60,6 +60,20 @@ public class DevSqlServlet extends HttpServlet {
 			throws ServletException, IOException {
 		request.setCharacterEncoding("UTF-8");
 
+		// [SEGURANÇA] Este endpoint executa SQL arbitrário e ficou acessível
+		// publicamente quando o backend foi implantado no Render - a checagem
+		// de cargo == "DEV" abaixo protege quem pode USAR o terminal, mas não
+		// impede que o endpoint em si seja descoberto e sondado por qualquer
+		// pessoa na internet. Por isso ele agora também exige que a variável
+		// de ambiente ENABLE_DEV_SQL esteja setada como "true" no servidor.
+		// Em produção (Render), NÃO defina essa variável - o servlet responde
+		// 404 (não 403, para não revelar nem que a rota existe). Em
+		// desenvolvimento local, defina ENABLE_DEV_SQL=true no seu .env.
+		if (!devSqlHabilitado()) {
+			response.sendError(HttpServletResponse.SC_NOT_FOUND);
+			return;
+		}
+
 		// O corpo chega como JSON (e não como application/x-www-form-urlencoded,
 		// diferente dos outros servlets), então lemos e parseamos manualmente.
 		StringBuilder corpo = new StringBuilder();
@@ -189,5 +203,20 @@ public class DevSqlServlet extends HttpServlet {
 			return "<binário: " + bytes.length + " bytes>";
 		}
 		return valor;
+	}
+
+	/**
+	 * Lê ENABLE_DEV_SQL priorizando variável de ambiente real do sistema
+	 * (Docker/Render) e caindo para o .env do classpath (Eclipse local),
+	 * igual ao padrão já usado em {@link util.ConnectionFactory}. Qualquer
+	 * valor diferente de "true" (case-insensitive) mantém o endpoint
+	 * desativado - o padrão é sempre seguro (desligado).
+	 */
+	private static boolean devSqlHabilitado() {
+		String valor = System.getenv("ENABLE_DEV_SQL");
+		if (valor == null || valor.isBlank()) {
+			valor = util.EnvLoader.get("ENABLE_DEV_SQL");
+		}
+		return "true".equalsIgnoreCase(valor != null ? valor.trim() : null);
 	}
 }

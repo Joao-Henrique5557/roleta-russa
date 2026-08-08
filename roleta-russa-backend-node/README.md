@@ -59,8 +59,8 @@ npm run dev                # ou "npm start"
 | GET    | `/ListarUsuarios`    | Ranking (top 10)                                            |
 | GET    | `/BuscarUsuario?id=` | Dados de um usuário                                         |
 | POST   | `/GanharPontos`      | Soma pontos                                                 |
-| GET    | `/ListarNovidades`   | Lista novidades ativas                                      |
-| POST   | `/CadastrarNovidade` | Cria novidade                                               |
+| GET    | `/ListarFeedbacks`   | Lista comentários/sugestões/denúncias                       |
+| POST   | `/CriarFeedback`     | Envia comentário/sugestão/denúncia                          |
 | POST   | `/DevSql`            | Terminal SQL da Área DEV (ver aviso de segurança no código) |
 
 ## Multiplayer (Socket.IO)

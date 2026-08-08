@@ -11,13 +11,9 @@ import ConfigPage from "./pages/ConfigPage/ConfigPage";
 import PerfilPage from "./pages/PerfilPage/PerfilPage";
 import EstudosPage from "./pages/EstudosPage/EstudosPage";
 import ErrorBoundary from "./components/Feedback/ErrorBoundary/ErrorBoundary";
-import IntroVideo from "./components/especiais/IntroVideo/IntroVideo";
-import { ToastProvider, useToast } from "./context/ToastContext";
-import { MusicPlayerProvider } from "./context/MusicPlayerContext";
+import { ToastProvider } from "./context/ToastContext";
 import { desconectarSocket } from "./services/socket";
-import { isDesktopDevice } from "./utils/device";
 
-// Fica dentro do ToastProvider pra poder usar o hook useToast.
 function AppContent() {
   const [view, setView] = useState("login");
   const [returnView, setReturnView] = useState("login");
@@ -26,11 +22,6 @@ function AppContent() {
   );
   const [salaAtual, setSalaAtual] = useState(null);
   const [nomeNaSala, setNomeNaSala] = useState("");
-  // Controla a intro como OVERLAY, não como troca de "view". Assim a Home
-  // (e o Ranking/Novidades dentro dela) continuam montados por baixo do
-  // vídeo, sem refazer as chamadas à API toda vez que a intro abre/fecha.
-  const [introAberta, setIntroAberta] = useState(false);
-  const { showToast } = useToast();
 
   const openConfig = (nextView) => {
     setReturnView(nextView ?? view);
@@ -53,16 +44,6 @@ function AppContent() {
     } else {
       navigateTo("perfil");
     }
-  };
-
-  // Botão "Créditos" na Home. Só abre o overlay - não navega pra lugar
-  // nenhum, então a Home embaixo nunca desmonta.
-  const onCredits = () => {
-    if (!isDesktopDevice()) {
-      showToast("Os créditos em vídeo estão disponíveis apenas no PC.", "info");
-      return;
-    }
-    setIntroAberta(true);
   };
 
   const entrarNaSala = (sala, nome) => {
@@ -104,7 +85,6 @@ function AppContent() {
           onLogout={() => onLogout()}
           urlAPI={urlAPI}
           onPerfil={onPerfil}
-          onCredits={onCredits}
         />
       )}
       {view === "singleplayer" && (
@@ -137,15 +117,6 @@ function AppContent() {
         <PerfilPage onBack={() => navigateTo("home")} urlAPI={urlAPI} />
       )}
       {view === "estudos" && <EstudosPage onBack={() => navigateTo("home")} />}
-
-      {/* Overlay independente da "view" atual - fica por cima sem desmontar
-          o que está embaixo (evita refazer fetch de Ranking/Novidades). */}
-      {introAberta && (
-        <IntroVideo
-          src="/video/Intro/intro.mp4"
-          onFinish={() => setIntroAberta(false)}
-        />
-      )}
     </div>
   );
 }
@@ -154,9 +125,7 @@ function App() {
   return (
     <ErrorBoundary>
       <ToastProvider>
-        <MusicPlayerProvider>
-          <AppContent />
-        </MusicPlayerProvider>
+        <AppContent />
       </ToastProvider>
     </ErrorBoundary>
   );

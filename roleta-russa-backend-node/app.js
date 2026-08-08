@@ -18,8 +18,12 @@ var cors = require("cors");
 var indexRouter = require("./routes/index");
 var statusRouter = require("./src/routes/status");
 var usuariosRouter = require("./src/routes/usuarios");
-var novidadesRouter = require("./src/routes/novidades");
-var devRouter = require("./src/routes/dev");
+var feedbacksRouter = require("./src/routes/feedbacks");
+// [REMOVIDO] "./src/routes/dev" (terminal SQL) era importado aqui mas nunca
+// chegava a ser registrado com app.use() - o arquivo inteiro estava
+// comentado (module.exports nem existia). Import morto removido; o
+// terminal SQL só existe no backend Java (DevSqlServlet.java), que agora
+// também exige a variável de ambiente ENABLE_DEV_SQL para responder.
 
 var app = express();
 
@@ -58,7 +62,7 @@ app.use(express.static(path.join(__dirname, "public")));
 // ---- Rotas de API (equivalentes aos Servlets do backend Java) ----
 app.use("/", statusRouter); // GET /Status
 app.use("/", usuariosRouter); // /CadastrarServlet, /AutenticarServlet, /ListarUsuarios, /BuscarUsuario, /GanharPontos
-app.use("/", novidadesRouter); // /ListarNovidades, /CadastrarNovidade
+app.use("/", feedbacksRouter); // /ListarFeedbacks, /CriarFeedback
 
 app.use("/", indexRouter); // rota "/" original do scaffold (só uma página informativa)
 

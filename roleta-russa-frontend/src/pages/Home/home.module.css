@@ -6,7 +6,7 @@
   color: var(--color-text-white);
   background-image:
     linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)),
-    url("/images/fundo.png");
+    url("/imagens/fundo.png");
   background-size: cover;
   background-position: center;
   /* [MOBILE FIX] background-attachment: fixed quebra em iOS Safari (paralax bug) */

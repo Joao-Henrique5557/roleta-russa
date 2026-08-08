@@ -14,13 +14,21 @@ CREATE TABLE IF NOT EXISTS usuarios (
     data_cadastro  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS novidades (
-    id               INT AUTO_INCREMENT PRIMARY KEY,
-    titulo           VARCHAR(120) NOT NULL,
-    descricao        TEXT         NOT NULL,
-    tipo             VARCHAR(40)  NOT NULL,
-    autor            VARCHAR(60)  NOT NULL DEFAULT 'Anônimo',
-    versao           VARCHAR(20)  NOT NULL DEFAULT '1.0.0',
-    data_publicacao  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    ativo            BOOLEAN      NOT NULL DEFAULT TRUE
+-- Comentários, sugestões e denúncias enviados pelos jogadores.
+-- Ver db/migration_002_feedbacks.sql para o histórico/detalhes desta tabela
+-- e como aplicá-la num banco de produção já existente.
+CREATE TABLE IF NOT EXISTS feedbacks (
+    id             INT AUTO_INCREMENT PRIMARY KEY,
+    tipo           ENUM('COMENTARIO', 'SUGESTAO', 'DENUNCIA') NOT NULL,
+    mensagem       TEXT         NOT NULL,
+    autor          VARCHAR(60)  NOT NULL DEFAULT 'Anônimo',
+    usuario_id     INT          NULL,
+    status         ENUM('ABERTO', 'EM_ANALISE', 'RESOLVIDO', 'ARQUIVADO') NOT NULL DEFAULT 'ABERTO',
+    data_criacao   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    ativo          BOOLEAN      NOT NULL DEFAULT TRUE,
+    CONSTRAINT fk_feedbacks_usuario
+        FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+        ON DELETE SET NULL,
+    INDEX idx_feedbacks_tipo (tipo),
+    INDEX idx_feedbacks_status (status)
 );

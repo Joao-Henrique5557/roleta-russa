@@ -4,7 +4,7 @@
  * Centralizar isso aqui evita que cada componente reimplemente sua própria
  * lógica de "se for 401 então... se for timeout então..." - antes isso
  * estava espalhado (e um pouco inconsistente) entre Formulario, Ranking e
- * Novidades.
+ * Feedbacks.
  *
  * @param {import('axios').AxiosError} error
  * @param {string} fallback mensagem padrão caso nenhum caso específico bata
