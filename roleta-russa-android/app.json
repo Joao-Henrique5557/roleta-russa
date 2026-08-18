@@ -13,17 +13,29 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.joaohenrique5557.roletarussaandroid"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.joaohenrique5557.roletarussaandroid"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "00a63e8f-f0fe-4139-8eee-38ad30e2269d"
+      }
+    },
+    "plugins": [
+      "expo-font",
+      "expo-asset",
+      "expo-audio"
+    ]
   }
 }
